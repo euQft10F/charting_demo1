@@ -23,10 +23,24 @@ export interface PairLevels {
   strategy: Series
 }
 
-/** Shift an ISO date; month/year shifts clamp to the end of the target month (Mar 31 − 1M = Feb 28/29). */
-function shift(iso: string, { days = 0, months = 0, years = 0 }): string {
+interface Shift {
+  days?: number
+  months?: number
+}
+
+/** How far back each preset reaches from the latest date; Max is the whole history. */
+const LOOKBACK: Record<Exclude<WindowPreset, 'Max'>, Shift> = {
+  '5D': { days: -7 },
+  '1M': { months: -1 },
+  '3M': { months: -3 },
+  '1Y': { months: -12 },
+  '5Y': { months: -60 },
+}
+
+/** Shift an ISO date; month shifts clamp to the end of the target month (Mar 31 − 1M = Feb 28/29). */
+function shift(iso: string, { days = 0, months = 0 }: Shift): string {
   const d = new Date(`${iso}T00:00:00Z`)
-  const targetMonth = d.getUTCMonth() + months + years * 12
+  const targetMonth = d.getUTCMonth() + months
   const lastDay = new Date(Date.UTC(d.getUTCFullYear(), targetMonth + 1, 0)).getUTCDate()
   const result = new Date(
     Date.UTC(d.getUTCFullYear(), targetMonth, Math.min(d.getUTCDate(), lastDay) + days),
@@ -36,24 +50,10 @@ function shift(iso: string, { days = 0, months = 0, years = 0 }): string {
 
 /** Resolve a Window to concrete start/end dates within the available history. */
 export function resolveWindow(window: Window, available: DateRange): DateRange {
-  const end = available.end
-  const clamp = (start: string) => ({ start: start < available.start ? available.start : start, end })
-  switch (window.preset) {
-    case '5D':
-      return clamp(shift(end, { days: -7 }))
-    case '1M':
-      return clamp(shift(end, { months: -1 }))
-    case '3M':
-      return clamp(shift(end, { months: -3 }))
-    case '1Y':
-      return clamp(shift(end, { years: -1 }))
-    case '5Y':
-      return clamp(shift(end, { years: -5 }))
-    case 'Max':
-      return { start: available.start, end }
-    case 'Custom':
-      return { start: window.start, end: window.end }
-  }
+  if (window.preset === 'Custom') return { start: window.start, end: window.end }
+  if (window.preset === 'Max') return available
+  const start = shift(available.end, LOOKBACK[window.preset])
+  return { start: start < available.start ? available.start : start, end: available.end }
 }
 
 /** Keep only the days of the Levels that fall inside the date range. */

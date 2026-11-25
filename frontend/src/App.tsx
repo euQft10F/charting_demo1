@@ -7,7 +7,7 @@ export default function App() {
 
   return (
     <div className="min-h-svh">
-      <header className="border-b-4 border-primary bg-white px-6 py-4">
+      <header className="border-b-4 border-primary bg-card px-6 py-4">
         <h1 className="text-xl font-semibold">
           Performance <span className="text-primary">Charting</span>
         </h1>
@@ -25,7 +25,7 @@ export default function App() {
         ) : (
           <ComparisonCard
             indices={indices.data.indices}
-            available={{ start: indices.data.start, end: indices.data.end }}
+            available={indices.data}
           />
         )}
       </main>

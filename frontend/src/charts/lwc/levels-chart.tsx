@@ -1,7 +1,7 @@
 import { createChart, LineSeries, type IChartApi, type ISeriesApi } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 
-import { BENCHMARK_COLOR, STRATEGY_COLOR } from '@/lib/colors'
+import { CHART_THEME } from '@/lib/colors'
 
 export interface LevelsChartProps {
   dates: string[]
@@ -9,38 +9,47 @@ export interface LevelsChartProps {
   strategy: number[]
 }
 
+interface ChartHandles {
+  chart: IChartApi
+  benchmark: ISeriesApi<'Line'>
+  strategy: ISeriesApi<'Line'>
+}
+
 /** Lightweight Charts renderer for Benchmark and Strategy Levels. */
 export function LevelsChart({ dates, benchmark, strategy }: LevelsChartProps) {
   const container = useRef<HTMLDivElement>(null)
-  const chart = useRef<IChartApi>(null)
-  const series = useRef<{ benchmark: ISeriesApi<'Line'>; strategy: ISeriesApi<'Line'> }>(null)
+  const handles = useRef<ChartHandles>(null)
 
   useEffect(() => {
-    const c = createChart(container.current!, {
+    const chart = createChart(container.current!, {
       autoSize: true,
-      layout: { background: { color: '#ffffff' }, textColor: '#444', attributionLogo: false },
-      grid: { vertLines: { visible: false }, horzLines: { color: '#eee' } },
+      layout: {
+        background: { color: CHART_THEME.background },
+        textColor: CHART_THEME.text,
+        attributionLogo: false,
+      },
+      grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false },
     })
-    chart.current = c
-    series.current = {
-      benchmark: c.addSeries(LineSeries, { color: BENCHMARK_COLOR, lineWidth: 2 }),
-      strategy: c.addSeries(LineSeries, { color: STRATEGY_COLOR, lineWidth: 2 }),
+    handles.current = {
+      chart,
+      benchmark: chart.addSeries(LineSeries, { color: CHART_THEME.benchmark, lineWidth: 2 }),
+      strategy: chart.addSeries(LineSeries, { color: CHART_THEME.strategy, lineWidth: 2 }),
     }
     return () => {
-      c.remove()
-      chart.current = null
-      series.current = null
+      chart.remove()
+      handles.current = null
     }
   }, [])
 
   useEffect(() => {
-    if (!series.current || !chart.current) return
+    const h = handles.current
+    if (!h) return
     const toData = (values: number[]) => dates.map((time, i) => ({ time, value: values[i] }))
-    series.current.benchmark.setData(toData(benchmark))
-    series.current.strategy.setData(toData(strategy))
-    chart.current.timeScale().fitContent()
+    h.benchmark.setData(toData(benchmark))
+    h.strategy.setData(toData(strategy))
+    h.chart.timeScale().fitContent()
   }, [dates, benchmark, strategy])
 
   return <div ref={container} className="h-full w-full" />

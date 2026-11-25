@@ -8,7 +8,7 @@ import { ChartCard } from '@/components/chart-card'
 import { WindowFields } from '@/components/window-fields'
 import { defaultWindowValues, refineWindow, toWindow, useAppliedValues, windowShape } from '@/lib/window-form'
 import { useLevels } from '@/lib/queries'
-import { DEFAULT_PRESET, resolveWindow, sliceLevels, type DateRange } from '@/lib/window'
+import { resolveWindow, sliceLevels, type DateRange } from '@/lib/window'
 
 interface CardProps {
   indices: string[]
@@ -35,7 +35,7 @@ export function ComparisonCard({ indices, available }: CardProps) {
     <ChartCard
       title="Comparison Chart"
       description="Levels of the Benchmark and Strategy over the Window."
-      controls={<WindowFields control={form.control} indices={indices} preset={values.preset ?? DEFAULT_PRESET} />}
+      controls={<WindowFields control={form.control} indices={indices} />}
       legend={sliced && { benchmark: sliced.benchmark.name, strategy: sliced.strategy.name }}
       isFetching={levels.isFetching}
       error={levels.error}

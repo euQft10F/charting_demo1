@@ -1,4 +1,5 @@
-import { Controller, type Control, type FieldValues, type Path } from 'react-hook-form'
+import { useId } from 'react'
+import { Controller, useWatch, type Control, type FieldValues, type Path } from 'react-hook-form'
 
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -10,15 +11,15 @@ import type { WindowValues } from '@/lib/window-form'
 interface WindowFieldsProps<T extends FieldValues & WindowValues> {
   control: Control<T>
   indices: string[]
-  preset: WindowValues['preset']
 }
 
 export function WindowFields<T extends FieldValues & WindowValues>({
   control,
   indices,
-  preset,
 }: WindowFieldsProps<T>) {
   const name = (n: keyof WindowValues) => n as Path<T>
+  const preset = useWatch({ control, name: name('preset') })
+  const id = useId()
   return (
     <div className="flex flex-wrap items-start gap-3">
       {(['benchmark', 'strategy'] as const).map((role) => (
@@ -28,11 +29,11 @@ export function WindowFields<T extends FieldValues & WindowValues>({
           name={name(role)}
           render={({ field, fieldState }) => (
             <Field className="w-44" data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${role}-${field.name}`}>
+              <FieldLabel htmlFor={`${id}-${role}`}>
                 {role === 'benchmark' ? 'Benchmark' : 'Strategy'}
               </FieldLabel>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id={`${role}-${field.name}`} className="w-full">
+                <SelectTrigger id={`${id}-${role}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -83,11 +84,11 @@ export function WindowFields<T extends FieldValues & WindowValues>({
             name={name(bound)}
             render={({ field, fieldState }) => (
               <Field className="w-40" data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={`${bound}-${field.name}`}>
+                <FieldLabel htmlFor={`${id}-${bound}`}>
                   {bound === 'start' ? 'From' : 'To'}
                 </FieldLabel>
                 <Input
-                  id={`${bound}-${field.name}`}
+                  id={`${id}-${bound}`}
                   type="date"
                   aria-invalid={fieldState.invalid}
                   {...field}

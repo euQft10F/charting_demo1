@@ -2,7 +2,8 @@ import type { ReactNode } from 'react'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
-import { BENCHMARK_COLOR, STRATEGY_COLOR } from '@/lib/colors'
+import { CHART_THEME } from '@/lib/colors'
+import { cn } from '@/lib/utils'
 
 interface ChartCardProps {
   title: string
@@ -38,8 +39,8 @@ export function ChartCard({
         {controls}
         {legend && (
           <div className="flex gap-4 text-sm">
-            <LegendItem color={BENCHMARK_COLOR} label={`${legend.benchmark} (Benchmark)`} />
-            <LegendItem color={STRATEGY_COLOR} label={`${legend.strategy} (Strategy)`} />
+            <LegendItem color={CHART_THEME.benchmark} label={`${legend.benchmark} (Benchmark)`} />
+            <LegendItem color={CHART_THEME.strategy} label={`${legend.strategy} (Strategy)`} />
           </div>
         )}
         <div className="relative h-80">
@@ -51,7 +52,7 @@ export function ChartCard({
             children
           )}
           {isFetching && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60">
               <Spinner className="size-8 text-primary" />
             </div>
           )}
@@ -73,9 +74,10 @@ function LegendItem({ color, label }: { color: string; label: string }) {
 function Message({ children, tone }: { children: ReactNode; tone?: 'error' }) {
   return (
     <div
-      className={`flex h-full items-center justify-center rounded-md border border-dashed text-sm ${
-        tone === 'error' ? 'text-destructive' : 'text-muted-foreground'
-      }`}
+      className={cn(
+        'flex h-full items-center justify-center rounded-md border border-dashed text-sm',
+        tone === 'error' ? 'text-destructive' : 'text-muted-foreground',
+      )}
     >
       {children}
     </div>

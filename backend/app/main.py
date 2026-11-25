@@ -10,8 +10,9 @@ from app.schemas import IndicesResponse, LevelsResponse, Series
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
-    get_dataset()  # generate the synthetic data at startup
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    # Generate the data at startup, honouring a test override of the dependency.
+    app.dependency_overrides.get(get_dataset, get_dataset)()
     yield
 
 

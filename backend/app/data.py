@@ -60,10 +60,6 @@ def generate_dataset(seed: int = SEED, end: pd.Timestamp | None = None) -> pd.Da
 
 
 @cache
-def _dataset() -> pd.DataFrame:
-    return generate_dataset()
-
-
 def get_dataset() -> pd.DataFrame:
     """FastAPI dependency providing the Index Levels; overridden in tests."""
-    return _dataset()
+    return generate_dataset()
