@@ -21,6 +21,13 @@ export const levelsResponseSchema = z.object({
 })
 export type LevelsResponse = z.infer<typeof levelsResponseSchema>
 
+export const drawdownsResponseSchema = z.object({
+  dates: z.array(z.iso.date()),
+  benchmark: seriesSchema,
+  strategy: seriesSchema,
+})
+export type DrawdownsResponse = z.infer<typeof drawdownsResponseSchema>
+
 async function getJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(path)
   if (!res.ok) {
@@ -37,4 +44,13 @@ export function fetchIndices(): Promise<IndicesResponse> {
 export function fetchLevels(names: string[]): Promise<LevelsResponse> {
   const params = new URLSearchParams(names.map((n) => ['names', n]))
   return getJson(`/api/levels?${params}`, levelsResponseSchema)
+}
+
+export function fetchDrawdowns(
+  benchmark: string,
+  strategy: string,
+  range: { start: string; end: string },
+): Promise<DrawdownsResponse> {
+  const params = new URLSearchParams({ benchmark, strategy, ...range })
+  return getJson(`/api/drawdowns?${params}`, drawdownsResponseSchema)
 }

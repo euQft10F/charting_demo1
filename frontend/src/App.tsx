@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { ComparisonCard } from '@/cards/comparison-card'
+import { DrawdownCard } from '@/cards/drawdown-card'
 import { Spinner } from '@/components/ui/spinner'
 import { DEFAULT_AXIS_SIDE, type AxisSide } from '@/lib/axis-side'
 import { useIndices } from '@/lib/queries'
@@ -28,7 +29,10 @@ export default function App() {
         ) : indices.isError ? (
           <p className="text-destructive">Could not reach the backend: {indices.error.message}</p>
         ) : (
-          <ComparisonCard history={indices.data} axisSide={axisSide} onAxisSideChange={setAxisSide} />
+          <>
+            <ComparisonCard history={indices.data} axisSide={axisSide} onAxisSideChange={setAxisSide} />
+            <DrawdownCard history={indices.data} axisSide={axisSide} />
+          </>
         )}
       </main>
     </div>

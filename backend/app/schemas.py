@@ -17,3 +17,11 @@ class Series(BaseModel):
 class LevelsResponse(BaseModel):
     dates: list[dt.date]
     series: list[Series]
+
+
+class DrawdownsResponse(BaseModel):
+    """Drawdowns in %, at most 0, on the days of the Window."""
+
+    dates: list[dt.date]
+    benchmark: Series
+    strategy: Series

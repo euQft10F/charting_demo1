@@ -1,7 +1,7 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
 
-import { fetchLevels, fetchIndices, type LevelsResponse } from '@/lib/api'
-import type { PairLevels } from '@/lib/window'
+import { fetchDrawdowns, fetchLevels, fetchIndices, type LevelsResponse } from '@/lib/api'
+import type { DateRange, PairLevels } from '@/lib/window'
 
 export function useIndices() {
   return useQuery({ queryKey: ['indices'], queryFn: fetchIndices, staleTime: Infinity })
@@ -31,5 +31,15 @@ export function useLevels(benchmark: string, strategy: string) {
       placeholderData: keepPreviousData,
     })),
     combine: combinePair,
+  })
+}
+
+/** Drawdowns of the Benchmark and Strategy over a Window; the backend calculates them. */
+export function useDrawdowns(benchmark: string, strategy: string, range: DateRange) {
+  return useQuery({
+    queryKey: ['drawdowns', benchmark, strategy, range.start, range.end],
+    queryFn: () => fetchDrawdowns(benchmark, strategy, range),
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
   })
 }
