@@ -80,5 +80,9 @@ The mean (or Annualised Mean) Daily Return of each Index within each Performance
 **Drawdown Performance Chart**:
 The return of each Index from start to end of each Drawdown Period.
 
+**Axis Side**:
+Which edge of a chart, Left or Right, its value axis sits on. One setting shared by all charts; Right by default.
+_Avoid_: Y-axis position, price scale
+
 **Charting Library**:
 One of Lightweight Charts, Recharts, Apache ECharts or Plotly.js, any of which can render every chart.

@@ -1,9 +1,14 @@
+import { useState } from 'react'
+
 import { ComparisonCard } from '@/cards/comparison-card'
 import { Spinner } from '@/components/ui/spinner'
+import { DEFAULT_AXIS_SIDE, type AxisSide } from '@/lib/axis-side'
 import { useIndices } from '@/lib/queries'
 
 export default function App() {
   const indices = useIndices()
+  // One Axis Side for every chart; not persisted, so it resets on reload.
+  const [axisSide, setAxisSide] = useState<AxisSide>(DEFAULT_AXIS_SIDE)
 
   return (
     <div className="min-h-svh">
@@ -23,7 +28,7 @@ export default function App() {
         ) : indices.isError ? (
           <p className="text-destructive">Could not reach the backend: {indices.error.message}</p>
         ) : (
-          <ComparisonCard history={indices.data} />
+          <ComparisonCard history={indices.data} axisSide={axisSide} onAxisSideChange={setAxisSide} />
         )}
       </main>
     </div>
