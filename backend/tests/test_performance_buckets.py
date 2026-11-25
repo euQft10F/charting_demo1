@@ -2,6 +2,8 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.helpers import get_buckets, levels_from, request_buckets
+
 # Daily Returns on days 2..11 of the hand-built Indices below. Sorted by Benchmark return the
 # days fall into five pairs, so each Performance Bucket holds two days:
 #   Worst  Benchmark -4%, -3%   Strategy -6%, -2%   -> means -3.5%, -4.0%
@@ -11,13 +13,6 @@ from fastapi.testclient import TestClient
 #   Best   Benchmark +4%, +5%   Strategy +3%, +8%   -> means +4.5%, +5.5%
 BENCHMARK_RETURNS = [-0.04, 0.02, -0.01, 0.05, 0.00, -0.03, 0.01, 0.03, -0.02, 0.04]
 STRATEGY_RETURNS = [-0.06, 0.01, 0.00, 0.08, 0.02, -0.02, 0.00, 0.02, -0.04, 0.03]
-
-
-def levels_from(returns: list[float]) -> list[float]:
-    levels = [100.0]
-    for r in returns:
-        levels.append(levels[-1] * (1 + r))
-    return levels
 
 
 @pytest.fixture
@@ -30,19 +25,6 @@ def dataset() -> pd.DataFrame:
         },
         index=pd.bdate_range("2024-01-01", periods=11),
     )
-
-
-def get_buckets(client: TestClient, **overrides: str | bool) -> dict:
-    params = {
-        "benchmark": "Index A",
-        "strategy": "Index B",
-        "start": "2024-01-01",
-        "end": "2024-01-15",
-        **overrides,
-    }
-    res = client.get("/api/performance-buckets", params=params)
-    assert res.status_code == 200
-    return res.json()
 
 
 def test_returns_mean_daily_return_of_each_index_in_each_performance_bucket(
@@ -77,15 +59,7 @@ def test_window_with_fewer_daily_returns_than_buckets_is_empty(client: TestClien
 
 
 def test_unknown_index_is_rejected(client: TestClient) -> None:
-    res = client.get(
-        "/api/performance-buckets",
-        params={
-            "benchmark": "Index A",
-            "strategy": "Nope",
-            "start": "2024-01-01",
-            "end": "2024-01-15",
-        },
-    )
+    res = request_buckets(client, strategy="Nope")
 
     assert res.status_code == 404
 

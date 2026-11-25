@@ -4,7 +4,7 @@ import { Controller, useWatch, type Control, type FieldValues, type Path } from 
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { SegmentedField } from '@/components/segmented-field'
 import { WINDOW_CHOICES } from '@/lib/window'
 import type { WindowValues } from '@/lib/window-form'
 
@@ -53,27 +53,7 @@ export function WindowFields<T extends FieldValues & WindowValues>({
         control={control}
         name={name('preset')}
         render={({ field }) => (
-          <Field className="w-auto">
-            <FieldLabel>Window</FieldLabel>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="sm"
-              spacing={0}
-              value={field.value}
-              onValueChange={(v) => v && field.onChange(v)}
-            >
-              {WINDOW_CHOICES.map((p) => (
-                <ToggleGroupItem
-                  key={p}
-                  value={p}
-                  className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  {p}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </Field>
+          <SegmentedField label="Window" options={WINDOW_CHOICES} value={field.value} onChange={field.onChange} />
         )}
       />
       {preset === 'Custom' &&

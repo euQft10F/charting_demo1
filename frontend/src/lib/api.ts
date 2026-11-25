@@ -28,7 +28,7 @@ export const barsResponseSchema = z.object({
 })
 export type BarsResponse = z.infer<typeof barsResponseSchema>
 
-/** The Return Frequencies offered, with the value the backend expects. */
+/** The Return Frequencies offered, as the backend expects them (keep in step with `Frequency` in backend/app/buckets.py). */
 export const RETURN_FREQUENCIES = ['daily', 'weekly', 'monthly'] as const
 export type ReturnFrequency = (typeof RETURN_FREQUENCIES)[number]
 

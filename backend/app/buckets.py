@@ -3,10 +3,12 @@
 import datetime as dt
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 
 BUCKET_LABELS = ["Worst", "2", "3", "4", "Best"]
 
+# Keep in step with RETURN_FREQUENCIES in frontend/src/lib/api.ts.
 Frequency = Literal["daily", "weekly", "monthly"]
 # The calendar period each Return Frequency groups business days into.
 PERIOD_CODE: dict[Frequency, str] = {"daily": "D", "weekly": "W", "monthly": "M"}
@@ -33,17 +35,11 @@ def bucket_means(
     window = levels.loc[pd.Timestamp(start) : pd.Timestamp(end)]
     if window.empty:
         return [], []
-    period_ends = window.groupby(window.index.to_period(PERIOD_CODE[frequency])).tail(1)
-    kept = (
-        period_ends
-        if period_ends.index[0] == window.index[0]
-        else pd.concat([window.iloc[:1], period_ends])
-    )
-    returns = (
-        pd.DataFrame({"benchmark": kept[benchmark], "strategy": kept[strategy]})
-        .pct_change()
-        .dropna()
-    )
+    pair = pd.DataFrame({"benchmark": window[benchmark], "strategy": window[strategy]})
+    periods = window.index.to_period(PERIOD_CODE[frequency])
+    last_of_period = np.append(periods[1:] != periods[:-1], True)
+    first_day = np.arange(len(window)) == 0
+    returns = pair[last_of_period | first_day].pct_change().dropna()
     if len(returns) < len(BUCKET_LABELS):
         return [], []
     ranks = returns["benchmark"].rank(method="first")

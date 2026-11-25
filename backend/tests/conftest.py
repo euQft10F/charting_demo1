@@ -1,4 +1,5 @@
-from collections.abc import Iterator
+from collections.abc import Callable, Generator
+from contextlib import ExitStack
 
 import pandas as pd
 import pytest
@@ -22,8 +23,18 @@ def dataset() -> pd.DataFrame:
 
 
 @pytest.fixture
-def client(dataset: pd.DataFrame) -> Iterator[TestClient]:
-    app.dependency_overrides[get_dataset] = lambda: dataset
-    with TestClient(app) as c:
-        yield c
+def client_for() -> Generator[Callable[[pd.DataFrame], TestClient]]:
+    """Makes a client whose Indices are the given Levels; the override is undone afterwards."""
+    with ExitStack() as stack:
+
+        def make(levels: pd.DataFrame) -> TestClient:
+            app.dependency_overrides[get_dataset] = lambda: levels
+            return stack.enter_context(TestClient(app))
+
+        yield make
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def client(dataset: pd.DataFrame, client_for: Callable[[pd.DataFrame], TestClient]) -> TestClient:
+    return client_for(dataset)
