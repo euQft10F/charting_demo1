@@ -8,6 +8,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 
+import { shadedAreaOptions, themedChartOptions, toData } from '@/charts/lwc/shared'
 import { oppositeSide, type AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
 
@@ -26,21 +27,10 @@ interface ChartHandles {
   strategy: ISeriesApi<'Baseline'>
 }
 
-const toData = (dates: string[], values: number[]) => dates.map((time, i) => ({ time, value: values[i] }))
-
 /** Drawdowns are never above 0, so the area hangs from the 0 line and the y-axis tops out at 0. */
 function drawdownSeriesOptions(line: string, fill: string): BaselineSeriesPartialOptions {
   return {
-    baseValue: { type: 'price', price: 0 },
-    topLineColor: line,
-    topFillColor1: fill,
-    topFillColor2: fill,
-    bottomLineColor: line,
-    bottomFillColor1: fill,
-    bottomFillColor2: fill,
-    lineWidth: 2,
-    priceFormat: { type: 'percent' },
-    priceLineVisible: false,
+    ...shadedAreaOptions(line, fill, 2),
     autoscaleInfoProvider: (original: () => AutoscaleInfo | null) => {
       const info = original()
       if (!info?.priceRange) return info
@@ -58,19 +48,10 @@ export function DrawdownChart({ dates, benchmark, strategy, axisSide }: Drawdown
 
   useEffect(() => {
     // No top margin: the top edge of the axis is exactly 0.
-    const scaleMargins = { top: 0, bottom: 0.1 }
-    const chart = createChart(container.current!, {
-      autoSize: true,
-      layout: {
-        background: { color: CHART_THEME.background },
-        textColor: CHART_THEME.text,
-        attributionLogo: false,
-      },
-      grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
-      rightPriceScale: { borderVisible: false, visible: true, scaleMargins },
-      leftPriceScale: { borderVisible: false, visible: true, scaleMargins },
-      timeScale: { borderVisible: false },
-    })
+    const chart = createChart(
+      container.current!,
+      themedChartOptions({ scaleMargins: { top: 0, bottom: 0.1 } }),
+    )
     // The Benchmark is added first, so the Strategy overlays it.
     handles.current = {
       chart,

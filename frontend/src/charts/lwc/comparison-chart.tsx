@@ -8,6 +8,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 
+import { shadedAreaOptions, themedChartOptions, toData } from '@/charts/lwc/shared'
 import { oppositeSide, type AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
 
@@ -32,8 +33,6 @@ interface ChartHandles {
   difference: ISeriesApi<'Baseline'>
 }
 
-const toData = (dates: string[], values: number[]) => dates.map((time, i) => ({ time, value: values[i] }))
-
 /** Lightweight Charts renderer for the Comparison Chart: Levels plus the Cumulative Difference. */
 export function ComparisonChart({
   dates,
@@ -47,31 +46,12 @@ export function ComparisonChart({
   const handles = useRef<ChartHandles>(null)
 
   useEffect(() => {
-    const chart = createChart(container.current!, {
-      autoSize: true,
-      layout: {
-        background: { color: CHART_THEME.background },
-        textColor: CHART_THEME.text,
-        attributionLogo: false,
-      },
-      grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
-      rightPriceScale: { borderVisible: false, visible: true },
-      leftPriceScale: { borderVisible: false, visible: true },
-      timeScale: { borderVisible: false },
-    })
+    const chart = createChart(container.current!, themedChartOptions())
     // Added first so the Level lines draw on top of the shaded area.
-    const differenceSeries = chart.addSeries(BaselineSeries, {
-      baseValue: { type: 'price', price: 0 },
-      topLineColor: CHART_THEME.difference,
-      topFillColor1: CHART_THEME.differenceFill,
-      topFillColor2: CHART_THEME.differenceFill,
-      bottomLineColor: CHART_THEME.difference,
-      bottomFillColor1: CHART_THEME.differenceFill,
-      bottomFillColor2: CHART_THEME.differenceFill,
-      lineWidth: 1,
-      priceFormat: { type: 'percent' },
-      priceLineVisible: false,
-    })
+    const differenceSeries = chart.addSeries(
+      BaselineSeries,
+      shadedAreaOptions(CHART_THEME.difference, CHART_THEME.differenceFill, 1),
+    )
     handles.current = {
       chart,
       difference: differenceSeries,

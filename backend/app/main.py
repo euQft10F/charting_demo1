@@ -31,6 +31,12 @@ def list_indices(data: Dataset) -> IndicesResponse:
     )
 
 
+def require_known(data: pd.DataFrame, names: list[str]) -> None:
+    unknown = [n for n in names if n not in data.columns]
+    if unknown:
+        raise HTTPException(404, f"Unknown Index: {', '.join(unknown)}")
+
+
 def drawdown(values: pd.Series) -> pd.Series:
     """Drawdown in %: Level over its running maximum so far, minus 1."""
     return (values / values.cummax() - 1) * 100
@@ -44,9 +50,7 @@ def drawdowns(
     start: dt.date,
     end: dt.date,
 ) -> DrawdownsResponse:
-    unknown = [n for n in (benchmark, strategy) if n not in data.columns]
-    if unknown:
-        raise HTTPException(404, f"Unknown Index: {', '.join(unknown)}")
+    require_known(data, [benchmark, strategy])
     # Slicing to the Window first makes the running maximum start afresh on its first day.
     window = data.loc[pd.Timestamp(start) : pd.Timestamp(end)]
 
@@ -62,9 +66,7 @@ def drawdowns(
 
 @app.get("/api/levels")
 def levels(data: Dataset, names: Annotated[list[str], Query()]) -> LevelsResponse:
-    unknown = [n for n in names if n not in data.columns]
-    if unknown:
-        raise HTTPException(404, f"Unknown Index: {', '.join(unknown)}")
+    require_known(data, names)
     return LevelsResponse(
         dates=[d.date() for d in data.index],
         series=[Series(name=n, values=data[n].round(4).tolist()) for n in names],

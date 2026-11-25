@@ -1,16 +1,11 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
-import { z } from 'zod'
-
 import { DrawdownChart } from '@/charts/lwc/drawdown-chart'
 import { ChartCard } from '@/components/chart-card'
 import { WindowFields } from '@/components/window-fields'
-import { defaultWindowValues, refineWindow, toWindow, useAppliedValues, windowShape } from '@/lib/window-form'
+import { useWindowForm } from '@/lib/window-form'
 import type { IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
 import { useDrawdowns } from '@/lib/queries'
-import { resolveWindow, type DateRange } from '@/lib/window'
+import type { DateRange } from '@/lib/window'
 
 interface DrawdownCardProps {
   /** The Indices on offer and the dates their history covers. */
@@ -22,16 +17,7 @@ interface DrawdownCardProps {
 export function DrawdownCard({ history, axisSide }: DrawdownCardProps) {
   const { indices } = history
   const available: DateRange = history
-  const schema = useMemo(() => z.object(windowShape).superRefine(refineWindow(available)), [available])
-  const form = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: defaultWindowValues(available),
-    mode: 'onChange',
-  })
-  const values = useWatch({ control: form.control })
-  const applied = useAppliedValues(schema, values)
-
-  const range = resolveWindow(toWindow(applied), available)
+  const { form, applied, range } = useWindowForm(available)
   const drawdowns = useDrawdowns(applied.benchmark, applied.strategy, range)
   const data = drawdowns.data
 
