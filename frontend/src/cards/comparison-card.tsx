@@ -43,14 +43,15 @@ export function ComparisonCard({ history, axisSide, onAxisSideChange }: Comparis
     [levels.data, applied, available],
   )
 
-  const series = useMemo(() => {
+  // Cumulative Difference ignores Rebase, so toggling Rebase leaves it untouched.
+  const difference = useMemo(
+    () => sliced && cumulativeDifference(sliced.benchmark.values, sliced.strategy.values),
+    [sliced],
+  )
+  const shown = useMemo(() => {
     if (!sliced) return undefined
-    const { benchmark, strategy } = sliced
-    return {
-      benchmark: rebased ? rebase(benchmark.values) : benchmark.values,
-      strategy: rebased ? rebase(strategy.values) : strategy.values,
-      difference: cumulativeDifference(benchmark.values, strategy.values),
-    }
+    const level = rebased ? rebase : (values: number[]) => values
+    return { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
   }, [sliced, rebased])
 
   return (
@@ -58,17 +59,15 @@ export function ComparisonCard({ history, axisSide, onAxisSideChange }: Comparis
       title="Comparison Chart"
       description="Levels of the Benchmark and Strategy over the Window, with their Cumulative Difference."
       controls={
-        <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
           <WindowFields control={form.control} indices={indices} />
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 self-end">
-            <LabelledCheckbox label="Rebase to 100" checked={rebased} onCheckedChange={setRebased} />
-            <LabelledCheckbox label="Log scale" checked={logScale} onCheckedChange={setLogScale} />
-            <LabelledCheckbox
-              label="Y-axis on left"
-              checked={axisSide === 'left'}
-              onCheckedChange={(left) => onAxisSideChange(left ? 'left' : 'right')}
-            />
-          </div>
+          <LabelledCheckbox label="Rebase to 100" checked={rebased} onCheckedChange={setRebased} />
+          <LabelledCheckbox label="Log scale" checked={logScale} onCheckedChange={setLogScale} />
+          <LabelledCheckbox
+            label="Y-axis on left"
+            checked={axisSide === 'left'}
+            onCheckedChange={(left) => onAxisSideChange(left ? 'left' : 'right')}
+          />
         </div>
       }
       legend={
@@ -82,12 +81,12 @@ export function ComparisonCard({ history, axisSide, onAxisSideChange }: Comparis
       error={levels.error}
       emptyReason={sliced && sliced.dates.length < 2 ? 'Not enough data in this Window.' : undefined}
     >
-      {sliced && series && (
+      {sliced && shown && difference && (
         <ComparisonChart
           dates={sliced.dates}
-          benchmark={series.benchmark}
-          strategy={series.strategy}
-          difference={series.difference}
+          benchmark={shown.benchmark}
+          strategy={shown.strategy}
+          difference={difference}
           logScale={logScale}
           axisSide={axisSide}
         />

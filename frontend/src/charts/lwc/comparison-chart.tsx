@@ -32,6 +32,8 @@ interface ChartHandles {
   difference: ISeriesApi<'Baseline'>
 }
 
+const toData = (dates: string[], values: number[]) => dates.map((time, i) => ({ time, value: values[i] }))
+
 /** Lightweight Charts renderer for the Comparison Chart: Levels plus the Cumulative Difference. */
 export function ComparisonChart({
   dates,
@@ -43,7 +45,6 @@ export function ComparisonChart({
 }: ComparisonChartProps) {
   const container = useRef<HTMLDivElement>(null)
   const handles = useRef<ChartHandles>(null)
-  const fittedDates = useRef<string[]>(null)
 
   useEffect(() => {
     const chart = createChart(container.current!, {
@@ -54,8 +55,8 @@ export function ComparisonChart({
         attributionLogo: false,
       },
       grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
-      rightPriceScale: { borderVisible: false },
-      leftPriceScale: { borderVisible: false },
+      rightPriceScale: { borderVisible: false, visible: true },
+      leftPriceScale: { borderVisible: false, visible: true },
       timeScale: { borderVisible: false },
     })
     // Added first so the Level lines draw on top of the shaded area.
@@ -80,7 +81,6 @@ export function ComparisonChart({
     return () => {
       chart.remove()
       handles.current = null
-      fittedDates.current = null
     }
   }, [])
 
@@ -92,26 +92,27 @@ export function ComparisonChart({
     h.benchmark.applyOptions({ priceScaleId: axisSide })
     h.strategy.applyOptions({ priceScaleId: axisSide })
     h.difference.applyOptions({ priceScaleId: differenceSide })
-    h.chart.priceScale(axisSide).applyOptions({
-      visible: true,
-      mode: logScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal,
-    })
-    h.chart.priceScale(differenceSide).applyOptions({ visible: true, mode: PriceScaleMode.Normal })
+    h.chart
+      .priceScale(axisSide)
+      .applyOptions({ mode: logScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal })
+    h.chart.priceScale(differenceSide).applyOptions({ mode: PriceScaleMode.Normal })
   }, [axisSide, logScale])
 
+  // One effect per series, so toggling Rebase only replaces the two Level series.
   useEffect(() => {
-    const h = handles.current
-    if (!h) return
-    const toData = (values: number[]) => dates.map((time, i) => ({ time, value: values[i] }))
-    h.benchmark.setData(toData(benchmark))
-    h.strategy.setData(toData(strategy))
-    h.difference.setData(toData(difference))
-    // Rebase only rescales values; refit the time axis just when the Window itself changes.
-    if (fittedDates.current !== dates) {
-      h.chart.timeScale().fitContent()
-      fittedDates.current = dates
-    }
-  }, [dates, benchmark, strategy, difference])
+    handles.current?.benchmark.setData(toData(dates, benchmark))
+  }, [dates, benchmark])
+  useEffect(() => {
+    handles.current?.strategy.setData(toData(dates, strategy))
+  }, [dates, strategy])
+  useEffect(() => {
+    handles.current?.difference.setData(toData(dates, difference))
+  }, [dates, difference])
+
+  // Refit the time axis only when the Window changes, not on Rebase.
+  useEffect(() => {
+    handles.current?.chart.timeScale().fitContent()
+  }, [dates])
 
   return <div ref={container} className="h-full w-full" />
 }
