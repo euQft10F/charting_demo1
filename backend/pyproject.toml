@@ -12,14 +12,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
+    "httpx2>=2.16.2",
     "pytest>=9.2.0",
     "ruff>=0.17.6",
     "ty>=0.0.110",
 ]
-
-[tool.pytest.ini_options]
-filterwarnings = ["ignore:Using `httpx`"]
 
 [tool.ruff]
 line-length = 100
