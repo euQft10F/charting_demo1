@@ -1,6 +1,6 @@
 import type { Series } from '@/lib/api'
 
-export const WINDOW_PRESETS = ['5D', '1M', '3M', '1Y', '5Y', 'Max'] as const
+export const WINDOW_PRESETS = ['1W', '1M', '3M', '1Y', '5Y', 'Max'] as const
 export type WindowPreset = (typeof WINDOW_PRESETS)[number]
 /** Every choice offered by the Window selector. */
 export const WINDOW_CHOICES = [...WINDOW_PRESETS, 'Custom'] as const
@@ -28,9 +28,9 @@ interface Shift {
   months?: number
 }
 
-/** The span each preset covers, counted back from the latest date; Max is the whole history. */
-const PRESET_SPAN: Record<Exclude<WindowPreset, 'Max'>, Shift> = {
-  '5D': { days: -7 },
+/** The Lookback of each preset, counted back from the latest date; Max is the whole history. */
+const LOOKBACK: Record<Exclude<WindowPreset, 'Max'>, Shift> = {
+  '1W': { days: -7 },
   '1M': { months: -1 },
   '3M': { months: -3 },
   '1Y': { months: -12 },
@@ -52,7 +52,7 @@ function shift(iso: string, { days = 0, months = 0 }: Shift): string {
 export function resolveWindow(window: Window, available: DateRange): DateRange {
   if (window.preset === 'Custom') return { start: window.start, end: window.end }
   if (window.preset === 'Max') return available
-  const start = shift(available.end, PRESET_SPAN[window.preset])
+  const start = shift(available.end, LOOKBACK[window.preset])
   return { start: start < available.start ? available.start : start, end: available.end }
 }
 
