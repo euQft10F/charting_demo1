@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMemo, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import { DEFAULT_PRESET, WINDOW_CHOICES, type DateRange, type Window } from '@/lib/window'
@@ -57,4 +59,19 @@ export function useAppliedValues<S extends z.ZodType>(schema: S, values: unknown
     setApplied(parsed.data)
   }
   return applied
+}
+
+/**
+ * The Benchmark, Strategy and Window form shared by every chart card: the form to render
+ * with `WindowFields`, and the last valid values to chart.
+ */
+export function useWindowForm(available: DateRange) {
+  const schema = useMemo(() => z.object(windowShape).superRefine(refineWindow(available)), [available])
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: defaultWindowValues(available),
+    mode: 'onChange',
+  })
+  const applied = useAppliedValues(schema, useWatch({ control: form.control }))
+  return { form, applied }
 }

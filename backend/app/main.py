@@ -1,3 +1,4 @@
+import datetime as dt
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Annotated
@@ -5,8 +6,9 @@ from typing import Annotated
 import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException, Query
 
+from app.buckets import BUCKET_LABELS, bucket_means
 from app.data import get_dataset
-from app.schemas import IndicesResponse, LevelsResponse, Series
+from app.schemas import BarsResponse, IndicesResponse, LevelsResponse, Series
 
 
 @asynccontextmanager
@@ -30,12 +32,36 @@ def list_indices(data: Dataset) -> IndicesResponse:
     )
 
 
-@app.get("/api/levels")
-def levels(data: Dataset, names: Annotated[list[str], Query()]) -> LevelsResponse:
+def require_known(data: pd.DataFrame, names: list[str]) -> None:
     unknown = [n for n in names if n not in data.columns]
     if unknown:
         raise HTTPException(404, f"Unknown Index: {', '.join(unknown)}")
+
+
+@app.get("/api/levels")
+def levels(data: Dataset, names: Annotated[list[str], Query()]) -> LevelsResponse:
+    require_known(data, names)
     return LevelsResponse(
         dates=[d.date() for d in data.index],
         series=[Series(name=n, values=data[n].round(4).tolist()) for n in names],
+    )
+
+
+@app.get("/api/performance-buckets")
+def performance_buckets(
+    data: Dataset,
+    benchmark: str,
+    strategy: str,
+    start: dt.date,
+    end: dt.date,
+    annualise: bool = False,
+) -> BarsResponse:
+    require_known(data, [benchmark, strategy])
+    benchmark_means, strategy_means = bucket_means(data, benchmark, strategy, start, end, annualise)
+    return BarsResponse(
+        categories=BUCKET_LABELS if benchmark_means else [],
+        series=[
+            Series(name=benchmark, values=benchmark_means),
+            Series(name=strategy, values=strategy_means),
+        ],
     )

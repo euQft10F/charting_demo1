@@ -17,3 +17,10 @@ class Series(BaseModel):
 class LevelsResponse(BaseModel):
     dates: list[dt.date]
     series: list[Series]
+
+
+class BarsResponse(BaseModel):
+    """Bar-chart data, independent of any Charting Library."""
+
+    categories: list[str]
+    series: list[Series]

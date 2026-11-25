@@ -1,13 +1,10 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
-import { z } from 'zod'
 
 import { ComparisonChart } from '@/charts/lwc/comparison-chart'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { WindowFields } from '@/components/window-fields'
-import { defaultWindowValues, refineWindow, toWindow, useAppliedValues, windowShape } from '@/lib/window-form'
+import { toWindow, useWindowForm } from '@/lib/window-form'
 import type { IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
@@ -26,16 +23,9 @@ interface ComparisonCardProps {
 export function ComparisonCard({ history, axisSide, onAxisSideChange }: ComparisonCardProps) {
   const { indices } = history
   const available: DateRange = history
-  const schema = useMemo(() => z.object(windowShape).superRefine(refineWindow(available)), [available])
-  const form = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: defaultWindowValues(available),
-    mode: 'onChange',
-  })
+  const { form, applied } = useWindowForm(available)
   const [rebased, setRebased] = useState(false)
   const [logScale, setLogScale] = useState(false)
-  const values = useWatch({ control: form.control })
-  const applied = useAppliedValues(schema, values)
 
   const levels = useLevels(applied.benchmark, applied.strategy)
   const sliced = useMemo(
