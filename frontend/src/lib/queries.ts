@@ -2,6 +2,7 @@ import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 import {
+  fetchDrawdownPerformance,
   fetchDrawdownPeriods,
   fetchDrawdowns,
   fetchIndices,
@@ -84,6 +85,16 @@ export function useDrawdownPeriods(benchmark: string, range: DateRange, n: numbe
   return useQuery({
     queryKey: ['drawdown-periods', benchmark, range.start, range.end, n],
     queryFn: () => fetchDrawdownPeriods(benchmark, range, n),
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** Benchmark and Strategy returns over the Benchmark's `n` deepest Drawdown Periods; the backend calculates them. */
+export function useDrawdownPerformance(benchmark: string, strategy: string, range: DateRange, n: number) {
+  return useQuery({
+    queryKey: ['drawdown-performance', benchmark, strategy, range.start, range.end, n],
+    queryFn: () => fetchDrawdownPerformance(benchmark, strategy, range, n),
     staleTime: Infinity,
     placeholderData: keepPreviousData,
   })

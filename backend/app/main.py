@@ -90,6 +90,37 @@ def drawdown_periods(
     )
 
 
+def period_label(period: DrawdownPeriod) -> str:
+    """E.g. "Jan 2022 – Sep 2022"."""
+    return f"{period.start:%b %Y} – {period.end:%b %Y}"
+
+
+@app.get("/api/drawdown-performance")
+def drawdown_performance(
+    data: Dataset,
+    benchmark: str,
+    strategy: str,
+    start: dt.date,
+    end: dt.date,
+    n: Annotated[int, Query(ge=1, le=10)] = 2,
+) -> BarsResponse:
+    require_known(data, [benchmark, strategy])
+    window = window_of(data, start, end)
+    periods = deepest_drawdown_periods(window[benchmark], n)
+
+    def period_returns(name: str) -> list[float]:
+        levels = window[name]
+        return [levels[pd.Timestamp(p.end)] / levels[pd.Timestamp(p.start)] - 1 for p in periods]
+
+    return BarsResponse(
+        categories=[period_label(p) for p in periods],
+        series=[
+            Series(name=benchmark, values=period_returns(benchmark)),
+            Series(name=strategy, values=period_returns(strategy)),
+        ],
+    )
+
+
 @app.get("/api/drawdowns")
 def drawdowns(
     data: Dataset,

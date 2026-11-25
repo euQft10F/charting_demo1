@@ -1,10 +1,9 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 
 import { DrawdownPeriodsChart } from '@/charts/lwc/drawdown-periods-chart'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
-import { Field, FieldLabel } from '@/components/ui/field'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
 import { WindowFields } from '@/components/window-fields'
 import type { DrawdownPeriod, IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
@@ -12,9 +11,6 @@ import { useDrawdownPeriods, useWindowLevels } from '@/lib/queries'
 import type { DateRange } from '@/lib/window'
 import { useWindowForm } from '@/lib/window-form'
 
-/** How many of the Benchmark's deepest Drawdown Periods can be shaded. */
-const PERIOD_COUNTS = Array.from({ length: 10 }, (_, i) => i + 1)
-const DEFAULT_PERIOD_COUNT = 2
 /** Shown instead of the bands while they load: the previous Window's bands would sit in the wrong place. */
 const NO_PERIODS: DrawdownPeriod[] = []
 
@@ -31,7 +27,6 @@ export function DrawdownPeriodsCard({ history, axisSide }: DrawdownPeriodsCardPr
   const { form, applied, range } = useWindowForm(available)
   const [count, setCount] = useState(DEFAULT_PERIOD_COUNT)
   const [rebased, setRebased] = useState(false)
-  const countId = useId()
 
   const { levels, sliced, shown } = useWindowLevels(applied.benchmark, applied.strategy, range, rebased)
   const periods = useDrawdownPeriods(applied.benchmark, range, count)
@@ -43,21 +38,7 @@ export function DrawdownPeriodsCard({ history, axisSide }: DrawdownPeriodsCardPr
       controls={
         <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
           <WindowFields control={form.control} indices={indices} />
-          <Field className="w-28">
-            <FieldLabel htmlFor={countId}>Periods shown</FieldLabel>
-            <Select value={String(count)} onValueChange={(v) => setCount(Number(v))}>
-              <SelectTrigger id={countId} className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PERIOD_COUNTS.map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          <PeriodCountField value={count} onChange={setCount} />
           <LabelledCheckbox label="Rebase to 100" checked={rebased} onCheckedChange={setRebased} />
         </div>
       }

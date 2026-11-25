@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ComparisonCard } from '@/cards/comparison-card'
 import { DrawdownCard } from '@/cards/drawdown-card'
+import { DrawdownPerformanceCard } from '@/cards/drawdown-performance-card'
 import { DrawdownPeriodsCard } from '@/cards/drawdown-periods-card'
 import { PerformanceBucketsCard } from '@/cards/performance-buckets-card'
 import { Spinner } from '@/components/ui/spinner'
@@ -36,6 +37,7 @@ export default function App() {
             <DrawdownCard history={indices.data} axisSide={axisSide} />
             <DrawdownPeriodsCard history={indices.data} axisSide={axisSide} />
             <PerformanceBucketsCard history={indices.data} axisSide={axisSide} />
+            <DrawdownPerformanceCard history={indices.data} axisSide={axisSide} />
           </>
         )}
       </main>

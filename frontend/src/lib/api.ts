@@ -102,3 +102,14 @@ export function fetchDrawdownPeriods(
   const params = new URLSearchParams({ benchmark, ...range, n: String(n) })
   return getJson(`/api/drawdown-periods?${params}`, drawdownPeriodsResponseSchema)
 }
+
+/** Benchmark and Strategy returns over the Benchmark's `n` deepest Drawdown Periods; one category per period. */
+export function fetchDrawdownPerformance(
+  benchmark: string,
+  strategy: string,
+  range: { start: string; end: string },
+  n: number,
+): Promise<BarsResponse> {
+  const params = new URLSearchParams({ benchmark, strategy, ...range, n: String(n) })
+  return getJson(`/api/drawdown-performance?${params}`, barsResponseSchema)
+}

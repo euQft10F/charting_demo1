@@ -156,6 +156,10 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
     barsRef.current?.setData(
       categories.map((_, i) => ({ time: timeOf(i), values: series.map((s) => s.values[i]) })),
     )
+    // The default label width estimate is 8 characters; long categories need room or get overlapped.
+    chartRef.current
+      ?.timeScale()
+      .applyOptions({ tickMarkMaxCharacterLength: Math.max(8, ...categories.map((c) => c.length)) })
     chartRef.current?.timeScale().fitContent()
   }, [categories, series])
 
