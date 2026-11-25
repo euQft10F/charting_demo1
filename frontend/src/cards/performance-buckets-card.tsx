@@ -31,16 +31,16 @@ export function PerformanceBucketsCard({ history, axisSide }: PerformanceBuckets
     annualise: annualised,
   })
 
+  // The backend returns fractions, Benchmark first; the chart shows %.
+  const bars = useMemo(
+    () =>
+      buckets.data?.series.map((s, i) => ({
+        color: i === 0 ? CHART_THEME.benchmark : CHART_THEME.strategy,
+        values: s.values.map((v) => v * 100),
+      })),
+    [buckets.data],
+  )
   const [benchmark, strategy] = buckets.data?.series ?? []
-  // The backend returns fractions; the chart shows %.
-  const bars = useMemo(() => {
-    if (!benchmark || !strategy) return undefined
-    const percent = (values: number[]) => values.map((v) => v * 100)
-    return [
-      { color: CHART_THEME.benchmark, values: percent(benchmark.values) },
-      { color: CHART_THEME.strategy, values: percent(strategy.values) },
-    ]
-  }, [benchmark, strategy])
 
   return (
     <ChartCard
@@ -59,9 +59,7 @@ export function PerformanceBucketsCard({ history, axisSide }: PerformanceBuckets
         buckets.data && buckets.data.categories.length === 0 ? 'Not enough data in this Window.' : undefined
       }
     >
-      {buckets.data && bars && (
-        <BarChart categories={buckets.data.categories} series={bars} axisSide={axisSide} />
-      )}
+      {buckets.data && bars && <BarChart categories={buckets.data.categories} series={bars} axisSide={axisSide} />}
     </ChartCard>
   )
 }

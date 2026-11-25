@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'react'
 
 import { oppositeSide, type AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
+import { THEMED_CHART_OPTIONS } from '@/charts/lwc/chart-options'
 
 export interface ComparisonChartProps {
   dates: string[]
@@ -48,13 +49,7 @@ export function ComparisonChart({
 
   useEffect(() => {
     const chart = createChart(container.current!, {
-      autoSize: true,
-      layout: {
-        background: { color: CHART_THEME.background },
-        textColor: CHART_THEME.text,
-        attributionLogo: false,
-      },
-      grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
+      ...THEMED_CHART_OPTIONS,
       rightPriceScale: { borderVisible: false, visible: true },
       leftPriceScale: { borderVisible: false, visible: true },
       timeScale: { borderVisible: false },

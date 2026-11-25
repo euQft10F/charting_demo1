@@ -13,8 +13,8 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 
+import { THEMED_CHART_OPTIONS } from '@/charts/lwc/chart-options'
 import type { AxisSide } from '@/lib/axis-side'
-import { CHART_THEME } from '@/lib/colors'
 
 export interface BarChartProps {
   /** One label per group of bars, left to right. */
@@ -56,12 +56,13 @@ class GroupedBarsView implements ICustomSeriesPaneView<Time, GroupedBarData, Gro
   private readonly paneRenderer: ICustomSeriesPaneRenderer = {
     draw: (target, priceConverter) => {
       const { data, options } = this
-      if (!data?.visibleRange || !options) return
+      const range = data?.visibleRange
+      if (!data || !range || !options) return
       target.useBitmapCoordinateSpace(({ context, horizontalPixelRatio: hr, verticalPixelRatio: vr }) => {
         const zero = priceConverter(0)
         if (zero === null) return
         const groupWidth = data.barSpacing * GROUP_FILL * hr
-        for (let i = data.visibleRange!.from; i <= data.visibleRange!.to; i++) {
+        for (let i = range.from; i <= range.to; i++) {
           const bar = data.bars[i]
           if (!bar) continue
           const { values } = bar.originalData
@@ -106,8 +107,9 @@ class GroupedBarsView implements ICustomSeriesPaneView<Time, GroupedBarData, Gro
 }
 
 /**
- * Lightweight Charts renderer for category bar charts: grouped bars, in %, with the categories
- * as axis labels. Shared by every chart whose data is `{ categories, series }`.
+ * Lightweight Charts renderer for category bar charts: grouped bars with the categories as axis
+ * labels. Values are percentages (the axis is formatted as %), so callers convert fractions
+ * first. Reused by every chart whose data is `{ categories, series }` of percentages.
  */
 export function BarChart({ categories, series, axisSide }: BarChartProps) {
   const container = useRef<HTMLDivElement>(null)
@@ -122,13 +124,7 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
   useEffect(() => {
     const label = (time: Time) => labels.current[indexOf(time)] ?? ''
     const chart = createChart(container.current!, {
-      autoSize: true,
-      layout: {
-        background: { color: CHART_THEME.background },
-        textColor: CHART_THEME.text,
-        attributionLogo: false,
-      },
-      grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
+      ...THEMED_CHART_OPTIONS,
       rightPriceScale: { borderVisible: false },
       leftPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false, tickMarkFormatter: label },
@@ -159,9 +155,6 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
     // Typed separately: the series API's option type doesn't know about the custom `colors`.
     const options: Partial<GroupedBarOptions> = { colors: series.map((s) => s.color) }
     barsRef.current?.applyOptions(options)
-  }, [series])
-
-  useEffect(() => {
     barsRef.current?.setData(
       categories.map((_, i) => ({ time: timeOf(i), values: series.map((s) => s.values[i]) })),
     )

@@ -8,6 +8,7 @@ import pandas as pd
 SEED = 12
 YEARS = 6
 START_LEVEL = 100.0
+TRADING_DAYS_PER_YEAR = 252  # business days per year; also scales a mean Daily Return to annual
 
 # name -> (annual drift, annual volatility, beta to the common market factor)
 INDEX_PARAMS: dict[str, tuple[float, float, float]] = {
@@ -39,7 +40,7 @@ def generate_dataset(seed: int = SEED, end: pd.Timestamp | None = None) -> pd.Da
     """
     rng = np.random.default_rng(seed)
     end = (end or pd.Timestamp.today()).normalize()
-    dates = pd.bdate_range(end=end, periods=YEARS * 252 + 1)
+    dates = pd.bdate_range(end=end, periods=YEARS * TRADING_DAYS_PER_YEAR + 1)
     n = len(dates) - 1  # number of Daily Returns
 
     market = rng.normal(0.0, MARKET_VOL, n)
@@ -50,9 +51,9 @@ def generate_dataset(seed: int = SEED, end: pd.Timestamp | None = None) -> pd.Da
 
     columns: dict[str, np.ndarray] = {}
     for name, (drift, vol, beta) in INDEX_PARAMS.items():
-        daily_vol = vol / np.sqrt(252)
+        daily_vol = vol / np.sqrt(TRADING_DAYS_PER_YEAR)
         idio_vol = np.sqrt(max(daily_vol**2 - (beta * MARKET_VOL) ** 2, (0.3 * daily_vol) ** 2))
-        returns = drift / 252 + beta * market + rng.normal(0.0, idio_vol, n)
+        returns = drift / TRADING_DAYS_PER_YEAR + beta * market + rng.normal(0.0, idio_vol, n)
         levels = START_LEVEL * np.cumprod(np.concatenate([[1.0], 1.0 + returns]))
         columns[name] = levels
 

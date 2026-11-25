@@ -4,8 +4,9 @@ import datetime as dt
 
 import pandas as pd
 
+from app.data import TRADING_DAYS_PER_YEAR
+
 BUCKET_LABELS = ["Worst", "2", "3", "4", "Best"]
-TRADING_DAYS_PER_YEAR = 252  # scales a mean Daily Return to its Annualised Mean Return
 
 
 def bucket_means(
