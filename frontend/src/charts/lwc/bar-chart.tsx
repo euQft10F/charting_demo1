@@ -11,7 +11,7 @@ import {
   type Time,
   type UTCTimestamp,
 } from 'lightweight-charts'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { themedChartOptions } from '@/charts/lwc/shared'
 import type { AxisSide } from '@/lib/axis-side'
@@ -20,7 +20,7 @@ export interface BarChartProps {
   /** One label per group of bars, left to right. */
   categories: string[]
   /** One bar per series in every category; `values[i]` belongs to `categories[i]`. */
-  series: { color: string; values: number[] }[]
+  series: { name: string; color: string; values: number[] }[]
   /** The side the value axis sits on. */
   axisSide: AxisSide
 }
@@ -112,6 +112,8 @@ class GroupedBarsView implements ICustomSeriesPaneView<Time, GroupedBarData, Gro
  * first. Reused by every chart whose data is `{ categories, series }` of percentages.
  */
 export function BarChart({ categories, series, axisSide }: BarChartProps) {
+  // The category under the pointer, and where to put its tooltip; null when the pointer is off the chart.
+  const [hover, setHover] = useState<{ index: number; x: number; flip: boolean } | null>(null)
   const container = useRef<HTMLDivElement>(null)
   const chartRef = useRef<ReturnType<typeof createChart>>(null)
   const barsRef = useRef<ISeriesApi<'Custom', Time, GroupedBarData | CustomSeriesWhitespaceData<Time>, GroupedBarOptions>>(null)
@@ -131,6 +133,10 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
       handleScale: false,
     })
     chartRef.current = chart
+    chart.subscribeCrosshairMove(({ time, point }) => {
+      if (time === undefined || !point) return setHover(null)
+      setHover({ index: indexOf(time), x: point.x, flip: point.x > container.current!.clientWidth / 2 })
+    })
     barsRef.current = chart.addCustomSeries(new GroupedBarsView(), {
       priceFormat: { type: 'percent' },
       priceLineVisible: false,
@@ -163,5 +169,25 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
     chartRef.current?.timeScale().fitContent()
   }, [categories, series])
 
-  return <div ref={container} className="h-full w-full" />
+  const shown = hover && categories[hover.index] !== undefined ? hover : null
+  return (
+    <div className="relative h-full w-full">
+      <div ref={container} className="h-full w-full" />
+      {shown && (
+        <div
+          className="pointer-events-none absolute top-2 z-10 rounded-md border bg-card px-3 py-2 text-sm shadow-md"
+          style={{ left: shown.x, transform: `translateX(${shown.flip ? 'calc(-100% - 12px)' : '12px'})` }}
+        >
+          <div className="mb-1 font-medium">{categories[shown.index]}</div>
+          {series.map((s, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="size-2.5 rounded-sm" style={{ backgroundColor: s.color }} />
+              <span>{s.name}</span>
+              <span className="ml-auto pl-4 tabular-nums">{s.values[shown.index].toFixed(2)}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }

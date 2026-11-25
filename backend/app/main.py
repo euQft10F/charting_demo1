@@ -108,9 +108,12 @@ def drawdown_performance(
     window = window_of(data, start, end)
     periods = deepest_drawdown_periods(window[benchmark], n)
 
+    starts = pd.DatetimeIndex([p.start for p in periods])
+    ends = pd.DatetimeIndex([p.end for p in periods])
+
     def period_returns(name: str) -> list[float]:
         levels = window[name]
-        return [levels[pd.Timestamp(p.end)] / levels[pd.Timestamp(p.start)] - 1 for p in periods]
+        return (levels.loc[ends].to_numpy() / levels.loc[starts].to_numpy() - 1).tolist()
 
     return BarsResponse(
         categories=[period_label(p) for p in periods],

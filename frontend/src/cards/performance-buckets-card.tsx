@@ -6,7 +6,7 @@ import { SegmentedField } from '@/components/segmented-field'
 import { WindowFields } from '@/components/window-fields'
 import { RETURN_FREQUENCIES, type IndicesResponse, type ReturnFrequency } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
-import { CHART_THEME } from '@/lib/colors'
+import { toBarSeries } from '@/lib/bars'
 import { usePerformanceBuckets } from '@/lib/queries'
 import { useWindowForm } from '@/lib/window-form'
 
@@ -28,15 +28,7 @@ export function PerformanceBucketsCard({ history, axisSide }: PerformanceBuckets
     frequency,
   })
 
-  // The backend returns fractions, Benchmark first; the chart shows %.
-  const bars = useMemo(
-    () =>
-      buckets.data?.series.map((s, i) => ({
-        color: i === 0 ? CHART_THEME.benchmark : CHART_THEME.strategy,
-        values: s.values.map((v) => v * 100),
-      })),
-    [buckets.data],
-  )
+  const bars = useMemo(() => buckets.data && toBarSeries(buckets.data.series), [buckets.data])
   const [benchmark, strategy] = buckets.data?.series ?? []
 
   return (

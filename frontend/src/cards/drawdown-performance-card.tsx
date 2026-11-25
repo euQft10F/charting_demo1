@@ -6,7 +6,7 @@ import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-coun
 import { WindowFields } from '@/components/window-fields'
 import type { IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
-import { CHART_THEME } from '@/lib/colors'
+import { toBarSeries } from '@/lib/bars'
 import { useDrawdownPerformance } from '@/lib/queries'
 import { useWindowForm } from '@/lib/window-form'
 
@@ -23,15 +23,7 @@ export function DrawdownPerformanceCard({ history, axisSide }: DrawdownPerforman
 
   const performance = useDrawdownPerformance(applied.benchmark, applied.strategy, range, count)
 
-  // The backend returns fractions, Benchmark first; the chart shows %.
-  const bars = useMemo(
-    () =>
-      performance.data?.series.map((s, i) => ({
-        color: i === 0 ? CHART_THEME.benchmark : CHART_THEME.strategy,
-        values: s.values.map((v) => v * 100),
-      })),
-    [performance.data],
-  )
+  const bars = useMemo(() => performance.data && toBarSeries(performance.data.series), [performance.data])
   const [benchmark, strategy] = performance.data?.series ?? []
 
   return (
@@ -47,11 +39,7 @@ export function DrawdownPerformanceCard({ history, axisSide }: DrawdownPerforman
       legend={benchmark && strategy && { benchmark: benchmark.name, strategy: strategy.name }}
       isFetching={performance.isFetching}
       error={performance.error}
-      emptyReason={
-        performance.data && performance.data.categories.length === 0
-          ? 'No Drawdown Periods in this Window.'
-          : undefined
-      }
+      emptyReason={performance.data?.categories.length === 0 ? 'No Drawdown Periods in this Window.' : undefined}
     >
       {performance.data && bars && (
         <BarChart categories={performance.data.categories} series={bars} axisSide={axisSide} />
