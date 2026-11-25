@@ -41,6 +41,16 @@ _Avoid_: Normalise
 **Daily Return**:
 The simple return of an Index from one business day to the next.
 
+**Weekly Return**:
+The simple return of an Index from its last Level in one calendar week to its last Level in the next. The first and last of a Window can cover a partial week.
+
+**Monthly Return**:
+The simple return of an Index from its last Level in one calendar month to its last Level in the next. The first and last of a Window can cover a partial month.
+
+**Return Frequency**:
+Whether the returns a chart ranks and averages are Daily, Weekly or Monthly Returns. Daily unless chosen otherwise.
+_Avoid_: Granularity, resolution, interval
+
 **Cumulative Difference**:
 The running sum, from the start of the Window, of the Strategy's Daily Return minus the Benchmark's Daily Return.
 _Avoid_: Relative return, excess return, spread
@@ -57,11 +67,8 @@ The span from the peak to the trough of one of the N deepest Benchmark Drawdown 
 _Avoid_: Drawdown window, crash period
 
 **Performance Bucket**:
-One of five quantile groups (Worst, 2, 3, 4, Best) of days, ranked by the Benchmark's Daily Return within the Window.
+One of five quantile groups (Worst, 2, 3, 4, Best) of the Window's days, weeks or months, ranked by the Benchmark's return at the chosen Return Frequency.
 _Avoid_: Quintile, bin
-
-**Annualised Mean Return**:
-A mean Daily Return scaled by 252.
 
 ## Charts
 
@@ -75,7 +82,7 @@ The Drawdowns of the Benchmark and Strategy overlaid.
 The Levels of both Indices with the Benchmark's Drawdown Periods highlighted.
 
 **Performance Buckets Chart**:
-The mean (or Annualised Mean) Daily Return of each Index within each Performance Bucket.
+The mean return, at the chosen Return Frequency, of each Index within each Performance Bucket.
 
 **Drawdown Performance Chart**:
 The return of each Index from start to end of each Drawdown Period.

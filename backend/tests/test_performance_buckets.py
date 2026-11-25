@@ -38,7 +38,6 @@ def get_buckets(client: TestClient, **overrides: str | bool) -> dict:
         "strategy": "Index B",
         "start": "2024-01-01",
         "end": "2024-01-15",
-        "annualise": False,
         **overrides,
     }
     res = client.get("/api/performance-buckets", params=params)
@@ -64,17 +63,6 @@ def test_only_ranks_days_inside_the_window(client: TestClient) -> None:
 
     assert body["series"][0]["values"] == pytest.approx([-0.04, -0.01, 0.0, 0.02, 0.05])
     assert body["series"][1]["values"] == pytest.approx([-0.06, 0.0, 0.02, 0.01, 0.08])
-
-
-def test_annualise_scales_the_mean_daily_returns_by_252(client: TestClient) -> None:
-    body = get_buckets(client, annualise=True)
-
-    assert body["series"][0]["values"] == pytest.approx(
-        [-0.035 * 252, -0.015 * 252, 0.005 * 252, 0.025 * 252, 0.045 * 252]
-    )
-    assert body["series"][1]["values"] == pytest.approx(
-        [-0.04 * 252, -0.02 * 252, 0.01 * 252, 0.015 * 252, 0.055 * 252]
-    )
 
 
 def test_window_with_fewer_daily_returns_than_buckets_is_empty(client: TestClient) -> None:

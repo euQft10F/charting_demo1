@@ -6,7 +6,7 @@ from typing import Annotated
 import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException, Query
 
-from app.buckets import BUCKET_LABELS, bucket_means
+from app.buckets import BUCKET_LABELS, Frequency, bucket_means
 from app.data import get_dataset
 from app.schemas import BarsResponse, IndicesResponse, LevelsResponse, Series
 
@@ -54,10 +54,10 @@ def performance_buckets(
     strategy: str,
     start: dt.date,
     end: dt.date,
-    annualise: bool = False,
+    frequency: Frequency = "daily",
 ) -> BarsResponse:
     require_known(data, [benchmark, strategy])
-    benchmark_means, strategy_means = bucket_means(data, benchmark, strategy, start, end, annualise)
+    benchmark_means, strategy_means = bucket_means(data, benchmark, strategy, start, end, frequency)
     return BarsResponse(
         categories=BUCKET_LABELS if benchmark_means else [],
         series=[

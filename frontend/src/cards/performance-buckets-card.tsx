@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 
 import { BarChart } from '@/charts/lwc/bar-chart'
 import { ChartCard } from '@/components/chart-card'
-import { LabelledCheckbox } from '@/components/labelled-checkbox'
+import { Field, FieldLabel } from '@/components/ui/field'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { WindowFields } from '@/components/window-fields'
-import type { IndicesResponse } from '@/lib/api'
+import { RETURN_FREQUENCIES, type IndicesResponse, type ReturnFrequency } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
 import { usePerformanceBuckets } from '@/lib/queries'
@@ -20,7 +21,7 @@ interface PerformanceBucketsCardProps {
 
 export function PerformanceBucketsCard({ history, axisSide }: PerformanceBucketsCardProps) {
   const { form, applied } = useWindowForm(history)
-  const [annualised, setAnnualised] = useState(false)
+  const [frequency, setFrequency] = useState<ReturnFrequency>('daily')
 
   const { start, end } = resolveWindow(toWindow(applied), history)
   const buckets = usePerformanceBuckets({
@@ -28,7 +29,7 @@ export function PerformanceBucketsCard({ history, axisSide }: PerformanceBuckets
     strategy: applied.strategy,
     start,
     end,
-    annualise: annualised,
+    frequency,
   })
 
   // The backend returns fractions, Benchmark first; the chart shows %.
@@ -45,11 +46,31 @@ export function PerformanceBucketsCard({ history, axisSide }: PerformanceBuckets
   return (
     <ChartCard
       title="Performance Buckets Chart"
-      description={`${annualised ? 'Annualised mean' : 'Mean'} Daily Return of the Benchmark and Strategy in each Performance Bucket, ranked by the Benchmark's Daily Return.`}
+      description={`Mean ${frequency} return of the Benchmark and Strategy in each Performance Bucket, ranked by the Benchmark's ${frequency} return.`}
       controls={
-        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+        <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
           <WindowFields control={form.control} indices={history.indices} />
-          <LabelledCheckbox label="Annualise (×252)" checked={annualised} onCheckedChange={setAnnualised} />
+          <Field className="w-auto">
+            <FieldLabel>Returns</FieldLabel>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              spacing={0}
+              value={frequency}
+              onValueChange={(v) => v && setFrequency(v as ReturnFrequency)}
+            >
+              {RETURN_FREQUENCIES.map((f) => (
+                <ToggleGroupItem
+                  key={f}
+                  value={f}
+                  className="capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  {f}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </Field>
         </div>
       }
       legend={benchmark && strategy && { benchmark: benchmark.name, strategy: strategy.name }}

@@ -8,7 +8,7 @@ import pandas as pd
 SEED = 12
 YEARS = 6
 START_LEVEL = 100.0
-TRADING_DAYS_PER_YEAR = 252  # business days per year; also scales a mean Daily Return to annual
+TRADING_DAYS_PER_YEAR = 252  # business days per year
 
 # name -> (annual drift, annual volatility, beta to the common market factor)
 INDEX_PARAMS: dict[str, tuple[float, float, float]] = {

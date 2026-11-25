@@ -28,14 +28,18 @@ export const barsResponseSchema = z.object({
 })
 export type BarsResponse = z.infer<typeof barsResponseSchema>
 
+/** The Return Frequencies offered, with the value the backend expects. */
+export const RETURN_FREQUENCIES = ['daily', 'weekly', 'monthly'] as const
+export type ReturnFrequency = (typeof RETURN_FREQUENCIES)[number]
+
 export interface PerformanceBucketsRequest {
   benchmark: string
   strategy: string
   /** ISO dates, inclusive. */
   start: string
   end: string
-  /** Annualised Mean Return instead of the mean Daily Return. */
-  annualise: boolean
+  /** Whether the ranked and averaged returns are Daily, Weekly or Monthly Returns. */
+  frequency: ReturnFrequency
 }
 
 async function getJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
@@ -56,10 +60,7 @@ export function fetchLevels(names: string[]): Promise<LevelsResponse> {
   return getJson(`/api/levels?${params}`, levelsResponseSchema)
 }
 
-export function fetchPerformanceBuckets({
-  annualise,
-  ...rest
-}: PerformanceBucketsRequest): Promise<BarsResponse> {
-  const params = new URLSearchParams({ ...rest, annualise: String(annualise) })
+export function fetchPerformanceBuckets(request: PerformanceBucketsRequest): Promise<BarsResponse> {
+  const params = new URLSearchParams({ ...request })
   return getJson(`/api/performance-buckets?${params}`, barsResponseSchema)
 }
