@@ -87,3 +87,23 @@ def test_drawdowns_reject_an_unknown_index(client: TestClient) -> None:
     )
 
     assert res.status_code == 404
+
+
+def test_drawdowns_of_a_single_index_leave_the_other_series_out(client: TestClient) -> None:
+    res = client.get(
+        "/api/drawdowns",
+        params={"strategy": "Index B", "start": "2024-01-01", "end": "2024-01-04"},
+    )
+
+    assert res.status_code == 200
+    assert res.json() == {
+        "dates": ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"],
+        "benchmark": None,
+        "strategy": {"name": "Index B", "values": [0.0, 0.0, 0.0, -13.4615]},
+    }
+
+
+def test_drawdowns_need_at_least_one_index(client: TestClient) -> None:
+    res = client.get("/api/drawdowns", params={"start": "2024-01-01", "end": "2024-01-04"})
+
+    assert res.status_code == 422

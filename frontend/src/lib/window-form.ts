@@ -64,9 +64,19 @@ export function useAppliedValues<S extends z.ZodType>(schema: S, values: unknown
 /**
  * The Benchmark, Strategy and Window form every chart card starts from: the form itself, the last
  * valid selection, and that selection's Window resolved to concrete dates.
+ *
+ * With `optionalIndices`, either Index may be left empty, but not both.
  */
-export function useWindowForm(available: DateRange) {
-  const schema = useMemo(() => z.object(windowShape).superRefine(refineWindow(available)), [available])
+export function useWindowForm(available: DateRange, { optionalIndices = false } = {}) {
+  const schema = useMemo(() => {
+    const shape = optionalIndices ? { ...windowShape, benchmark: z.string(), strategy: z.string() } : windowShape
+    return z.object(shape).superRefine((v, ctx) => {
+      refineWindow(available)(v, ctx)
+      if (optionalIndices && !v.benchmark && !v.strategy) {
+        ctx.addIssue({ code: 'custom', path: ['strategy'], message: 'Choose a Benchmark or a Strategy' })
+      }
+    })
+  }, [available, optionalIndices])
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultWindowValues(available),

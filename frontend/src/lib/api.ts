@@ -23,8 +23,10 @@ export type LevelsResponse = z.infer<typeof levelsResponseSchema>
 
 export const drawdownsResponseSchema = z.object({
   dates: z.array(z.iso.date()),
-  benchmark: seriesSchema,
-  strategy: seriesSchema,
+  /** Null when no Benchmark was asked for. */
+  benchmark: seriesSchema.nullable(),
+  /** Null when no Strategy was asked for. */
+  strategy: seriesSchema.nullable(),
 })
 export type DrawdownsResponse = z.infer<typeof drawdownsResponseSchema>
 
@@ -46,11 +48,14 @@ export function fetchLevels(names: string[]): Promise<LevelsResponse> {
   return getJson(`/api/levels?${params}`, levelsResponseSchema)
 }
 
+/** Drawdowns over a range; an empty `benchmark` or `strategy` leaves that Index out. */
 export function fetchDrawdowns(
   benchmark: string,
   strategy: string,
   range: { start: string; end: string },
 ): Promise<DrawdownsResponse> {
-  const params = new URLSearchParams({ benchmark, strategy, ...range })
+  const params = new URLSearchParams({ ...range })
+  if (benchmark) params.set('benchmark', benchmark)
+  if (strategy) params.set('strategy', strategy)
   return getJson(`/api/drawdowns?${params}`, drawdownsResponseSchema)
 }

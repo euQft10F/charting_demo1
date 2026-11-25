@@ -11,11 +11,17 @@ import type { WindowValues } from '@/lib/window-form'
 interface WindowFieldsProps<T extends FieldValues & WindowValues> {
   control: Control<T>
   indices: string[]
+  /** Offer "None" for the Benchmark and Strategy, which the form stores as an empty string. */
+  optionalIndices?: boolean
 }
+
+/** Select items can't have an empty value, so "None" travels as this stand-in. */
+const NONE = '__none__'
 
 export function WindowFields<T extends FieldValues & WindowValues>({
   control,
   indices,
+  optionalIndices = false,
 }: WindowFieldsProps<T>) {
   const name = (n: keyof WindowValues) => n as Path<T>
   const preset = useWatch({ control, name: name('preset') })
@@ -32,11 +38,15 @@ export function WindowFields<T extends FieldValues & WindowValues>({
               <FieldLabel htmlFor={`${id}-${role}`}>
                 {role === 'benchmark' ? 'Benchmark' : 'Strategy'}
               </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select
+                value={field.value || NONE}
+                onValueChange={(v) => field.onChange(v === NONE ? '' : v)}
+              >
                 <SelectTrigger id={`${id}-${role}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  {optionalIndices && <SelectItem value={NONE}>None</SelectItem>}
                   {indices.map((i) => (
                     <SelectItem key={i} value={i}>
                       {i}

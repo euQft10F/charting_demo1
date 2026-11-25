@@ -14,10 +14,10 @@ import { CHART_THEME } from '@/lib/colors'
 
 export interface DrawdownChartProps {
   dates: string[]
-  /** Benchmark Drawdown in %. */
-  benchmark: number[]
-  /** Strategy Drawdown in %. */
-  strategy: number[]
+  /** Benchmark Drawdown in %; undefined when no Benchmark is chosen. */
+  benchmark?: number[]
+  /** Strategy Drawdown in %; undefined when no Strategy is chosen. */
+  strategy?: number[]
   axisSide: AxisSide
 }
 
@@ -81,10 +81,10 @@ export function DrawdownChart({ dates, benchmark, strategy, axisSide }: Drawdown
   }, [axisSide])
 
   useEffect(() => {
-    handles.current?.benchmark.setData(toData(dates, benchmark))
+    handles.current?.benchmark.setData(benchmark ? toData(dates, benchmark) : [])
   }, [dates, benchmark])
   useEffect(() => {
-    handles.current?.strategy.setData(toData(dates, strategy))
+    handles.current?.strategy.setData(strategy ? toData(dates, strategy) : [])
   }, [dates, strategy])
 
   // Refit the time axis whenever the Window changes.

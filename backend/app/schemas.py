@@ -20,8 +20,8 @@ class LevelsResponse(BaseModel):
 
 
 class DrawdownsResponse(BaseModel):
-    """Drawdowns in %, at most 0, on the days of the Window."""
+    """Drawdowns in %, at most 0, on the days of the Window; None for an Index not asked for."""
 
     dates: list[dt.date]
-    benchmark: Series
-    strategy: Series
+    benchmark: Series | None
+    strategy: Series | None

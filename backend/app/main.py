@@ -45,12 +45,15 @@ def drawdown(values: pd.Series) -> pd.Series:
 @app.get("/api/drawdowns")
 def drawdowns(
     data: Dataset,
-    benchmark: str,
-    strategy: str,
     start: dt.date,
     end: dt.date,
+    benchmark: str | None = None,
+    strategy: str | None = None,
 ) -> DrawdownsResponse:
-    require_known(data, [benchmark, strategy])
+    names = [n for n in (benchmark, strategy) if n]
+    if not names:
+        raise HTTPException(422, "Choose a Benchmark or a Strategy")
+    require_known(data, names)
     # Slicing to the Window first makes the running maximum start afresh on its first day.
     window = data.loc[pd.Timestamp(start) : pd.Timestamp(end)]
 
@@ -59,8 +62,8 @@ def drawdowns(
 
     return DrawdownsResponse(
         dates=[d.date() for d in window.index],
-        benchmark=drawdown_series(benchmark),
-        strategy=drawdown_series(strategy),
+        benchmark=drawdown_series(benchmark) if benchmark else None,
+        strategy=drawdown_series(strategy) if strategy else None,
     )
 
 

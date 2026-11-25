@@ -17,16 +17,16 @@ interface DrawdownCardProps {
 export function DrawdownCard({ history, axisSide }: DrawdownCardProps) {
   const { indices } = history
   const available: DateRange = history
-  const { form, applied, range } = useWindowForm(available)
+  const { form, applied, range } = useWindowForm(available, { optionalIndices: true })
   const drawdowns = useDrawdowns(applied.benchmark, applied.strategy, range)
   const data = drawdowns.data
 
   return (
     <ChartCard
       title="Drawdown Chart"
-      description="Drawdowns of the Benchmark and Strategy over the Window."
-      controls={<WindowFields control={form.control} indices={indices} />}
-      legend={data && { benchmark: data.benchmark.name, strategy: data.strategy.name }}
+      description="Drawdowns of the Benchmark and Strategy over the Window; set either to None to show just one."
+      controls={<WindowFields control={form.control} indices={indices} optionalIndices />}
+      legend={data && { benchmark: data.benchmark?.name, strategy: data.strategy?.name }}
       isFetching={drawdowns.isFetching}
       error={drawdowns.error}
       emptyReason={data && data.dates.length < 2 ? 'Not enough data in this Window.' : undefined}
@@ -34,8 +34,8 @@ export function DrawdownCard({ history, axisSide }: DrawdownCardProps) {
       {data && (
         <DrawdownChart
           dates={data.dates}
-          benchmark={data.benchmark.values}
-          strategy={data.strategy.values}
+          benchmark={data.benchmark?.values}
+          strategy={data.strategy?.values}
           axisSide={axisSide}
         />
       )}
