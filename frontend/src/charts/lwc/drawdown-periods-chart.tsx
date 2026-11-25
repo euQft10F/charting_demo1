@@ -39,6 +39,9 @@ type Target = Parameters<IPrimitivePaneRenderer['draw']>[0]
 class PeriodBands implements ISeriesPrimitive<Time> {
   private periods: DrawdownPeriod[] = []
   private attachedTo?: SeriesAttachedParameter<Time>
+  private readonly views = [
+    { zOrder: () => 'bottom' as const, renderer: () => ({ draw: (t: Target) => this.draw(t) }) },
+  ]
 
   attached(param: SeriesAttachedParameter<Time>) {
     this.attachedTo = param
@@ -54,7 +57,7 @@ class PeriodBands implements ISeriesPrimitive<Time> {
   }
 
   paneViews() {
-    return [{ zOrder: () => 'bottom' as const, renderer: () => ({ draw: (t: Target) => this.draw(t) }) }]
+    return this.views
   }
 
   private draw(target: Target) {

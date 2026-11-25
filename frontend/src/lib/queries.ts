@@ -1,7 +1,9 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 
 import { fetchDrawdownPeriods, fetchDrawdowns, fetchLevels, fetchIndices, type LevelsResponse } from '@/lib/api'
-import type { DateRange, PairLevels } from '@/lib/window'
+import { rebase } from '@/lib/comparison'
+import { sliceLevels, type DateRange, type PairLevels } from '@/lib/window'
 
 export function useIndices() {
   return useQuery({ queryKey: ['indices'], queryFn: fetchIndices, staleTime: Infinity })
@@ -32,6 +34,21 @@ export function useLevels(benchmark: string, strategy: string) {
     })),
     combine: combinePair,
   })
+}
+
+/**
+ * The Levels of the Benchmark and Strategy cut to the Window, plus the same Levels `shown` on the
+ * chart: rebased to 100 or raw. Toggling Rebase only recomputes `shown`.
+ */
+export function useWindowLevels(benchmark: string, strategy: string, range: DateRange, rebased: boolean) {
+  const levels = useLevels(benchmark, strategy)
+  const sliced = useMemo(() => levels.data && sliceLevels(levels.data, range), [levels.data, range])
+  const shown = useMemo(() => {
+    if (!sliced) return undefined
+    const level = rebased ? rebase : (values: number[]) => values
+    return { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
+  }, [sliced, rebased])
+  return { levels, sliced, shown }
 }
 
 /** Drawdowns of the Benchmark and Strategy over a Window; the backend calculates them. */

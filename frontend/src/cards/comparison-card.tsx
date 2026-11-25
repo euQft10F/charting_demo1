@@ -8,9 +8,9 @@ import { useWindowForm } from '@/lib/window-form'
 import type { IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
-import { cumulativeDifference, rebase } from '@/lib/comparison'
-import { useLevels } from '@/lib/queries'
-import { sliceLevels, type DateRange } from '@/lib/window'
+import { cumulativeDifference } from '@/lib/comparison'
+import { useWindowLevels } from '@/lib/queries'
+import type { DateRange } from '@/lib/window'
 
 interface ComparisonCardProps {
   /** The Indices on offer and the dates their history covers. */
@@ -27,19 +27,13 @@ export function ComparisonCard({ history, axisSide, onAxisSideChange }: Comparis
   const [rebased, setRebased] = useState(false)
   const [logScale, setLogScale] = useState(false)
 
-  const levels = useLevels(applied.benchmark, applied.strategy)
-  const sliced = useMemo(() => levels.data && sliceLevels(levels.data, range), [levels.data, range])
+  const { levels, sliced, shown } = useWindowLevels(applied.benchmark, applied.strategy, range, rebased)
 
   // Cumulative Difference ignores Rebase, so toggling Rebase leaves it untouched.
   const difference = useMemo(
     () => sliced && cumulativeDifference(sliced.benchmark.values, sliced.strategy.values),
     [sliced],
   )
-  const shown = useMemo(() => {
-    if (!sliced) return undefined
-    const level = rebased ? rebase : (values: number[]) => values
-    return { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
-  }, [sliced, rebased])
 
   return (
     <ChartCard

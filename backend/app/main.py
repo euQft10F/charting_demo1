@@ -44,6 +44,11 @@ def require_known(data: pd.DataFrame, names: list[str]) -> None:
         raise HTTPException(404, f"Unknown Index: {', '.join(unknown)}")
 
 
+def window_of(data: pd.DataFrame, start: dt.date, end: dt.date) -> pd.DataFrame:
+    """The days of the Window; a running maximum over them starts afresh on the first day."""
+    return data.loc[pd.Timestamp(start) : pd.Timestamp(end)]
+
+
 def drawdown(values: pd.Series) -> pd.Series:
     """Drawdown in %: Level over its running maximum so far, minus 1."""
     return (values / values.cummax() - 1) * 100
@@ -78,9 +83,9 @@ def drawdown_periods(
     n: Annotated[int, Query(ge=1, le=10)] = 2,
 ) -> DrawdownPeriodsResponse:
     require_known(data, [benchmark])
-    # As for Drawdowns, the running maximum starts afresh on the first day of the Window.
-    window = data.loc[pd.Timestamp(start) : pd.Timestamp(end), benchmark]
-    return DrawdownPeriodsResponse(periods=deepest_drawdown_periods(window, n))
+    return DrawdownPeriodsResponse(
+        periods=deepest_drawdown_periods(window_of(data, start, end)[benchmark], n)
+    )
 
 
 @app.get("/api/drawdowns")
@@ -95,8 +100,7 @@ def drawdowns(
     if not names:
         raise HTTPException(422, "Choose a Benchmark or a Strategy")
     require_known(data, names)
-    # Slicing to the Window first makes the running maximum start afresh on its first day.
-    window = data.loc[pd.Timestamp(start) : pd.Timestamp(end)]
+    window = window_of(data, start, end)
 
     def drawdown_series(name: str) -> Series:
         return Series(name=name, values=drawdown(window[name]).round(4).tolist())

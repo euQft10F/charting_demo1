@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react'
+import { useId, useState } from 'react'
 
 import { DrawdownPeriodsChart } from '@/charts/lwc/drawdown-periods-chart'
 import { ChartCard } from '@/components/chart-card'
@@ -6,16 +6,17 @@ import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WindowFields } from '@/components/window-fields'
-import type { IndicesResponse } from '@/lib/api'
+import type { DrawdownPeriod, IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
-import { rebase } from '@/lib/comparison'
-import { useDrawdownPeriods, useLevels } from '@/lib/queries'
-import { sliceLevels, type DateRange } from '@/lib/window'
+import { useDrawdownPeriods, useWindowLevels } from '@/lib/queries'
+import type { DateRange } from '@/lib/window'
 import { useWindowForm } from '@/lib/window-form'
 
 /** How many of the Benchmark's deepest Drawdown Periods can be shaded. */
 const PERIOD_COUNTS = Array.from({ length: 10 }, (_, i) => i + 1)
 const DEFAULT_PERIOD_COUNT = 2
+/** Shown instead of the bands while they load: the previous Window's bands would sit in the wrong place. */
+const NO_PERIODS: DrawdownPeriod[] = []
 
 interface DrawdownPeriodsCardProps {
   /** The Indices on offer and the dates their history covers. */
@@ -32,14 +33,8 @@ export function DrawdownPeriodsCard({ history, axisSide }: DrawdownPeriodsCardPr
   const [rebased, setRebased] = useState(false)
   const countId = useId()
 
-  const levels = useLevels(applied.benchmark, applied.strategy)
+  const { levels, sliced, shown } = useWindowLevels(applied.benchmark, applied.strategy, range, rebased)
   const periods = useDrawdownPeriods(applied.benchmark, range, count)
-  const sliced = useMemo(() => levels.data && sliceLevels(levels.data, range), [levels.data, range])
-  const shown = useMemo(() => {
-    if (!sliced) return undefined
-    const level = rebased ? rebase : (values: number[]) => values
-    return { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
-  }, [sliced, rebased])
 
   return (
     <ChartCard
@@ -71,12 +66,12 @@ export function DrawdownPeriodsCard({ history, axisSide }: DrawdownPeriodsCardPr
       error={levels.error ?? periods.error}
       emptyReason={sliced && sliced.dates.length < 2 ? 'Not enough data in this Window.' : undefined}
     >
-      {sliced && shown && periods.data && (
+      {sliced && shown && (
         <DrawdownPeriodsChart
           dates={sliced.dates}
           benchmark={shown.benchmark}
           strategy={shown.strategy}
-          periods={periods.data.periods}
+          periods={periods.isPlaceholderData ? NO_PERIODS : (periods.data?.periods ?? NO_PERIODS)}
           axisSide={axisSide}
         />
       )}
