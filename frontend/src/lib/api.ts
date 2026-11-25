@@ -21,6 +21,27 @@ export const levelsResponseSchema = z.object({
 })
 export type LevelsResponse = z.infer<typeof levelsResponseSchema>
 
+/** Bar-chart data: `series[i].values[j]` belongs to `categories[j]`. Empty when there is too little data. */
+export const barsResponseSchema = z.object({
+  categories: z.array(z.string()),
+  series: z.array(seriesSchema),
+})
+export type BarsResponse = z.infer<typeof barsResponseSchema>
+
+/** The Return Frequencies offered, as the backend expects them (keep in step with `Frequency` in backend/app/buckets.py). */
+export const RETURN_FREQUENCIES = ['daily', 'weekly', 'monthly'] as const
+export type ReturnFrequency = (typeof RETURN_FREQUENCIES)[number]
+
+export interface PerformanceBucketsRequest {
+  benchmark: string
+  strategy: string
+  /** ISO dates, inclusive. */
+  start: string
+  end: string
+  /** Whether the ranked and averaged returns are Daily, Weekly or Monthly Returns. */
+  frequency: ReturnFrequency
+}
+
 export const drawdownsResponseSchema = z.object({
   dates: z.array(z.iso.date()),
   /** Null when no Benchmark was asked for. */
@@ -53,6 +74,11 @@ export function fetchIndices(): Promise<IndicesResponse> {
 export function fetchLevels(names: string[]): Promise<LevelsResponse> {
   const params = new URLSearchParams(names.map((n) => ['names', n]))
   return getJson(`/api/levels?${params}`, levelsResponseSchema)
+}
+
+export function fetchPerformanceBuckets(request: PerformanceBucketsRequest): Promise<BarsResponse> {
+  const params = new URLSearchParams({ ...request })
+  return getJson(`/api/performance-buckets?${params}`, barsResponseSchema)
 }
 
 /** Drawdowns over a range; an empty `benchmark` or `strategy` leaves that Index out. */

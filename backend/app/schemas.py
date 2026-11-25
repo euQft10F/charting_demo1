@@ -38,3 +38,10 @@ class DrawdownPeriodsResponse(BaseModel):
     """The Benchmark's deepest Drawdown Periods in the Window, in chronological order."""
 
     periods: list[DrawdownPeriod]
+
+
+class BarsResponse(BaseModel):
+    """Bar-chart data, independent of any Charting Library."""
+
+    categories: list[str]
+    series: list[Series]

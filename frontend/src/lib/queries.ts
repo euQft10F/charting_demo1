@@ -1,9 +1,27 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
-import { fetchDrawdownPeriods, fetchDrawdowns, fetchLevels, fetchIndices, type LevelsResponse } from '@/lib/api'
+import {
+  fetchDrawdownPeriods,
+  fetchDrawdowns,
+  fetchIndices,
+  fetchLevels,
+  fetchPerformanceBuckets,
+  type LevelsResponse,
+  type PerformanceBucketsRequest,
+} from '@/lib/api'
 import { rebase } from '@/lib/comparison'
 import { sliceLevels, type DateRange, type PairLevels } from '@/lib/window'
+
+/** Performance Bucket means for a Benchmark, Strategy and resolved Window; computed by the backend. */
+export function usePerformanceBuckets(request: PerformanceBucketsRequest) {
+  return useQuery({
+    queryKey: ['performance-buckets', request],
+    queryFn: () => fetchPerformanceBuckets(request),
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
+  })
+}
 
 export function useIndices() {
   return useQuery({ queryKey: ['indices'], queryFn: fetchIndices, staleTime: Infinity })

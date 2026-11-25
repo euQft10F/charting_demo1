@@ -6,8 +6,10 @@ from typing import Annotated
 import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException, Query
 
+from app.buckets import BUCKET_LABELS, Frequency, bucket_means
 from app.data import get_dataset
 from app.schemas import (
+    BarsResponse,
     DrawdownPeriod,
     DrawdownPeriodsResponse,
     DrawdownsResponse,
@@ -118,4 +120,25 @@ def levels(data: Dataset, names: Annotated[list[str], Query()]) -> LevelsRespons
     return LevelsResponse(
         dates=[d.date() for d in data.index],
         series=[Series(name=n, values=data[n].round(4).tolist()) for n in names],
+    )
+
+
+@app.get("/api/performance-buckets")
+def performance_buckets(
+    data: Dataset,
+    benchmark: str,
+    strategy: str,
+    start: dt.date,
+    end: dt.date,
+    frequency: Frequency = "daily",
+) -> BarsResponse:
+    require_known(data, [benchmark, strategy])
+    window = window_of(data, start, end)
+    benchmark_means, strategy_means = bucket_means(window, benchmark, strategy, frequency)
+    return BarsResponse(
+        categories=BUCKET_LABELS if benchmark_means else [],
+        series=[
+            Series(name=benchmark, values=benchmark_means),
+            Series(name=strategy, values=strategy_means),
+        ],
     )
