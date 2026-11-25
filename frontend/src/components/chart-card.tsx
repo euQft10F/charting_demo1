@@ -10,7 +10,7 @@ interface ChartCardProps {
   description: string
   controls: ReactNode
   /** Benchmark/Strategy names for the legend. */
-  legend?: { benchmark: string; strategy: string; extras?: { color: string; label: string }[] }
+  legend?: { benchmark?: string; strategy?: string; extras?: { color: string; label: string }[] }
   isFetching: boolean
   error: Error | null
   /** Set when the Window holds too little data for this chart. */
@@ -39,8 +39,12 @@ export function ChartCard({
         {controls}
         {legend && (
           <div className="flex gap-4 text-sm">
-            <LegendItem color={CHART_THEME.benchmark} label={`${legend.benchmark} (Benchmark)`} />
-            <LegendItem color={CHART_THEME.strategy} label={`${legend.strategy} (Strategy)`} />
+            {legend.benchmark && (
+              <LegendItem color={CHART_THEME.benchmark} label={`${legend.benchmark} (Benchmark)`} />
+            )}
+            {legend.strategy && (
+              <LegendItem color={CHART_THEME.strategy} label={`${legend.strategy} (Strategy)`} />
+            )}
             {legend.extras?.map((e) => <LegendItem key={e.label} {...e} />)}
           </div>
         )}

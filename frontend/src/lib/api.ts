@@ -42,6 +42,22 @@ export interface PerformanceBucketsRequest {
   frequency: ReturnFrequency
 }
 
+export const drawdownsResponseSchema = z.object({
+  dates: z.array(z.iso.date()),
+  /** Null when no Benchmark was asked for. */
+  benchmark: seriesSchema.nullable(),
+  /** Null when no Strategy was asked for. */
+  strategy: seriesSchema.nullable(),
+})
+export type DrawdownsResponse = z.infer<typeof drawdownsResponseSchema>
+
+export const drawdownPeriodsResponseSchema = z.object({
+  /** Peak to trough of each deep Drawdown Episode, in chronological order. */
+  periods: z.array(z.object({ start: z.iso.date(), end: z.iso.date() })),
+})
+export type DrawdownPeriodsResponse = z.infer<typeof drawdownPeriodsResponseSchema>
+export type DrawdownPeriod = DrawdownPeriodsResponse['periods'][number]
+
 async function getJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(path)
   if (!res.ok) {
@@ -63,4 +79,26 @@ export function fetchLevels(names: string[]): Promise<LevelsResponse> {
 export function fetchPerformanceBuckets(request: PerformanceBucketsRequest): Promise<BarsResponse> {
   const params = new URLSearchParams({ ...request })
   return getJson(`/api/performance-buckets?${params}`, barsResponseSchema)
+}
+
+/** Drawdowns over a range; an empty `benchmark` or `strategy` leaves that Index out. */
+export function fetchDrawdowns(
+  benchmark: string,
+  strategy: string,
+  range: { start: string; end: string },
+): Promise<DrawdownsResponse> {
+  const params = new URLSearchParams({ ...range })
+  if (benchmark) params.set('benchmark', benchmark)
+  if (strategy) params.set('strategy', strategy)
+  return getJson(`/api/drawdowns?${params}`, drawdownsResponseSchema)
+}
+
+/** The Benchmark's `n` deepest Drawdown Periods over a range. */
+export function fetchDrawdownPeriods(
+  benchmark: string,
+  range: { start: string; end: string },
+  n: number,
+): Promise<DrawdownPeriodsResponse> {
+  const params = new URLSearchParams({ benchmark, ...range, n: String(n) })
+  return getJson(`/api/drawdown-periods?${params}`, drawdownPeriodsResponseSchema)
 }

@@ -8,8 +8,7 @@ import { RETURN_FREQUENCIES, type IndicesResponse, type ReturnFrequency } from '
 import type { AxisSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
 import { usePerformanceBuckets } from '@/lib/queries'
-import { resolveWindow } from '@/lib/window'
-import { toWindow, useWindowForm } from '@/lib/window-form'
+import { useWindowForm } from '@/lib/window-form'
 
 interface PerformanceBucketsCardProps {
   /** The Indices on offer and the dates their history covers. */
@@ -19,15 +18,13 @@ interface PerformanceBucketsCardProps {
 }
 
 export function PerformanceBucketsCard({ history, axisSide }: PerformanceBucketsCardProps) {
-  const { form, applied } = useWindowForm(history)
+  const { form, applied, range } = useWindowForm(history)
   const [frequency, setFrequency] = useState<ReturnFrequency>('daily')
 
-  const { start, end } = resolveWindow(toWindow(applied), history)
   const buckets = usePerformanceBuckets({
     benchmark: applied.benchmark,
     strategy: applied.strategy,
-    start,
-    end,
+    ...range,
     frequency,
   })
 

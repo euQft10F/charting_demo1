@@ -1,6 +1,5 @@
 """Performance Buckets: returns ranked into quantile groups by the Benchmark's return."""
 
-import datetime as dt
 from typing import Literal
 
 import numpy as np
@@ -15,28 +14,25 @@ PERIOD_CODE: dict[Frequency, str] = {"daily": "D", "weekly": "W", "monthly": "M"
 
 
 def bucket_means(
-    levels: pd.DataFrame,
+    window: pd.DataFrame,
     benchmark: str,
     strategy: str,
-    start: dt.date,
-    end: dt.date,
     frequency: Frequency = "daily",
 ) -> tuple[list[float], list[float]]:
     """Mean return of the Benchmark and of the Strategy in each Performance Bucket.
 
-    Only the days from `start` to `end` count. The Levels used are the last one of each calendar
-    period (day, week or month) plus the Window's first day, and a return runs from one of these
-    Levels to the next, so the first and last periods can be partial. Returns are ranked by the
-    Benchmark's (ties broken by date) and cut into five even groups, Worst first.
+    `window` holds the Levels of the days in the Window. The Levels used are the last one of each
+    calendar period (day, week or month) plus the Window's first day, and a return runs from one
+    of these Levels to the next, so the first and last periods can be partial. Returns are ranked
+    by the Benchmark's (ties broken by date) and cut into five even groups, Worst first.
 
     Returns the Benchmark means and the Strategy means, five values each, or two empty lists
     when the Window holds fewer returns than buckets.
     """
-    window = levels.loc[pd.Timestamp(start) : pd.Timestamp(end)]
     if window.empty:
         return [], []
     pair = pd.DataFrame({"benchmark": window[benchmark], "strategy": window[strategy]})
-    periods = window.index.to_period(PERIOD_CODE[frequency])
+    periods = pd.DatetimeIndex(window.index).to_period(PERIOD_CODE[frequency])
     last_of_period = np.append(periods[1:] != periods[:-1], True)
     first_day = np.arange(len(window)) == 0
     returns = pair[last_of_period | first_day].pct_change().dropna()

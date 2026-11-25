@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
-import { DEFAULT_PRESET, WINDOW_CHOICES, type DateRange, type Window } from '@/lib/window'
+import { DEFAULT_PRESET, WINDOW_CHOICES, resolveWindow, type DateRange, type Window } from '@/lib/window'
 
 export const DEFAULT_BENCHMARK = 'Alpha Equity'
 export const DEFAULT_STRATEGY = 'Gamma Momentum'
@@ -62,16 +62,28 @@ export function useAppliedValues<S extends z.ZodType>(schema: S, values: unknown
 }
 
 /**
- * The Benchmark, Strategy and Window form shared by every chart card: the form to render
- * with `WindowFields`, and the last valid values to chart.
+ * The Benchmark, Strategy and Window form every chart card starts from: the form itself, the last
+ * valid selection, and that selection's Window resolved to concrete dates.
+ *
+ * With `optionalIndices`, either Index may be left empty, but not both.
  */
-export function useWindowForm(available: DateRange) {
-  const schema = useMemo(() => z.object(windowShape).superRefine(refineWindow(available)), [available])
+export function useWindowForm(available: DateRange, { optionalIndices = false } = {}) {
+  const schema = useMemo(() => {
+    const shape = optionalIndices ? { ...windowShape, benchmark: z.string(), strategy: z.string() } : windowShape
+    return z.object(shape).superRefine((v, ctx) => {
+      refineWindow(available)(v, ctx)
+      if (optionalIndices && !v.benchmark && !v.strategy) {
+        ctx.addIssue({ code: 'custom', path: ['strategy'], message: 'Choose a Benchmark or a Strategy' })
+      }
+    })
+  }, [available, optionalIndices])
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultWindowValues(available),
     mode: 'onChange',
   })
-  const applied = useAppliedValues(schema, useWatch({ control: form.control }))
-  return { form, applied }
+  const values = useWatch({ control: form.control })
+  const applied = useAppliedValues(schema, values)
+  const range = useMemo(() => resolveWindow(toWindow(applied), available), [applied, available])
+  return { form, applied, range }
 }

@@ -1,13 +1,17 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 
 import {
+  fetchDrawdownPeriods,
+  fetchDrawdowns,
   fetchIndices,
   fetchLevels,
   fetchPerformanceBuckets,
   type LevelsResponse,
   type PerformanceBucketsRequest,
 } from '@/lib/api'
-import type { PairLevels } from '@/lib/window'
+import { rebase } from '@/lib/comparison'
+import { sliceLevels, type DateRange, type PairLevels } from '@/lib/window'
 
 /** Performance Bucket means for a Benchmark, Strategy and resolved Window; computed by the backend. */
 export function usePerformanceBuckets(request: PerformanceBucketsRequest) {
@@ -47,5 +51,40 @@ export function useLevels(benchmark: string, strategy: string) {
       placeholderData: keepPreviousData,
     })),
     combine: combinePair,
+  })
+}
+
+/**
+ * The Levels of the Benchmark and Strategy cut to the Window, plus the same Levels `shown` on the
+ * chart: rebased to 100 or raw. Toggling Rebase only recomputes `shown`.
+ */
+export function useWindowLevels(benchmark: string, strategy: string, range: DateRange, rebased: boolean) {
+  const levels = useLevels(benchmark, strategy)
+  const sliced = useMemo(() => levels.data && sliceLevels(levels.data, range), [levels.data, range])
+  const shown = useMemo(() => {
+    if (!sliced) return undefined
+    const level = rebased ? rebase : (values: number[]) => values
+    return { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
+  }, [sliced, rebased])
+  return { levels, sliced, shown }
+}
+
+/** Drawdowns of the Benchmark and Strategy over a Window; the backend calculates them. */
+export function useDrawdowns(benchmark: string, strategy: string, range: DateRange) {
+  return useQuery({
+    queryKey: ['drawdowns', benchmark, strategy, range.start, range.end],
+    queryFn: () => fetchDrawdowns(benchmark, strategy, range),
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** The Benchmark's `n` deepest Drawdown Periods over a Window; the backend calculates them. */
+export function useDrawdownPeriods(benchmark: string, range: DateRange, n: number) {
+  return useQuery({
+    queryKey: ['drawdown-periods', benchmark, range.start, range.end, n],
+    queryFn: () => fetchDrawdownPeriods(benchmark, range, n),
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
   })
 }

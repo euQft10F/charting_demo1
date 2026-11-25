@@ -13,7 +13,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 
-import { THEMED_CHART_OPTIONS } from '@/charts/lwc/chart-options'
+import { themedChartOptions } from '@/charts/lwc/shared'
 import type { AxisSide } from '@/lib/axis-side'
 
 export interface BarChartProps {
@@ -124,9 +124,7 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
   useEffect(() => {
     const label = (time: Time) => labels.current[indexOf(time)] ?? ''
     const chart = createChart(container.current!, {
-      ...THEMED_CHART_OPTIONS,
-      rightPriceScale: { borderVisible: false },
-      leftPriceScale: { borderVisible: false },
+      ...themedChartOptions(),
       timeScale: { borderVisible: false, tickMarkFormatter: label },
       localization: { timeFormatter: label },
       handleScroll: false,

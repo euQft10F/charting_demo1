@@ -19,6 +19,27 @@ class LevelsResponse(BaseModel):
     series: list[Series]
 
 
+class DrawdownsResponse(BaseModel):
+    """Drawdowns in %, at most 0, on the days of the Window; None for an Index not asked for."""
+
+    dates: list[dt.date]
+    benchmark: Series | None
+    strategy: Series | None
+
+
+class DrawdownPeriod(BaseModel):
+    """From the peak to the trough of one Drawdown Episode."""
+
+    start: dt.date
+    end: dt.date
+
+
+class DrawdownPeriodsResponse(BaseModel):
+    """The Benchmark's deepest Drawdown Periods in the Window, in chronological order."""
+
+    periods: list[DrawdownPeriod]
+
+
 class BarsResponse(BaseModel):
     """Bar-chart data, independent of any Charting Library."""
 

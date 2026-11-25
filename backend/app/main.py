@@ -8,7 +8,15 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 
 from app.buckets import BUCKET_LABELS, Frequency, bucket_means
 from app.data import get_dataset
-from app.schemas import BarsResponse, IndicesResponse, LevelsResponse, Series
+from app.schemas import (
+    BarsResponse,
+    DrawdownPeriod,
+    DrawdownPeriodsResponse,
+    DrawdownsResponse,
+    IndicesResponse,
+    LevelsResponse,
+    Series,
+)
 
 
 @asynccontextmanager
@@ -38,6 +46,74 @@ def require_known(data: pd.DataFrame, names: list[str]) -> None:
         raise HTTPException(404, f"Unknown Index: {', '.join(unknown)}")
 
 
+def window_of(data: pd.DataFrame, start: dt.date, end: dt.date) -> pd.DataFrame:
+    """The days of the Window; a running maximum over them starts afresh on the first day."""
+    return data.loc[pd.Timestamp(start) : pd.Timestamp(end)]
+
+
+def drawdown(values: pd.Series) -> pd.Series:
+    """Drawdown in %: Level over its running maximum so far, minus 1."""
+    return (values / values.cummax() - 1) * 100
+
+
+def deepest_drawdown_periods(values: pd.Series, n: int) -> list[DrawdownPeriod]:
+    """Peak-to-trough spans of the n deepest Drawdown Episodes, in chronological order.
+
+    An episode starts at a peak, the last day at 0 Drawdown, and lasts while the Level stays below
+    it; an episode still under water on the last day counts.
+    """
+    dd = drawdown(values)
+    at_peak = dd == 0
+    underwater = dd[~at_peak]
+    if underwater.empty:
+        return []
+    peak_dates = dd.index[at_peak]
+    # Each day at 0 opens a new episode number, which the under-water days after it share.
+    episode = at_peak.cumsum()[underwater.index]
+    by_episode = underwater.groupby(episode)
+    deepest = by_episode.min().nsmallest(n).index.sort_values()
+    troughs = by_episode.idxmin()
+    return [DrawdownPeriod(start=peak_dates[e - 1].date(), end=troughs[e].date()) for e in deepest]
+
+
+@app.get("/api/drawdown-periods")
+def drawdown_periods(
+    data: Dataset,
+    benchmark: str,
+    start: dt.date,
+    end: dt.date,
+    n: Annotated[int, Query(ge=1, le=10)] = 2,
+) -> DrawdownPeriodsResponse:
+    require_known(data, [benchmark])
+    return DrawdownPeriodsResponse(
+        periods=deepest_drawdown_periods(window_of(data, start, end)[benchmark], n)
+    )
+
+
+@app.get("/api/drawdowns")
+def drawdowns(
+    data: Dataset,
+    start: dt.date,
+    end: dt.date,
+    benchmark: str | None = None,
+    strategy: str | None = None,
+) -> DrawdownsResponse:
+    names = [n for n in (benchmark, strategy) if n]
+    if not names:
+        raise HTTPException(422, "Choose a Benchmark or a Strategy")
+    require_known(data, names)
+    window = window_of(data, start, end)
+
+    def drawdown_series(name: str) -> Series:
+        return Series(name=name, values=drawdown(window[name]).round(4).tolist())
+
+    return DrawdownsResponse(
+        dates=[d.date() for d in window.index],
+        benchmark=drawdown_series(benchmark) if benchmark else None,
+        strategy=drawdown_series(strategy) if strategy else None,
+    )
+
+
 @app.get("/api/levels")
 def levels(data: Dataset, names: Annotated[list[str], Query()]) -> LevelsResponse:
     require_known(data, names)
@@ -57,7 +133,8 @@ def performance_buckets(
     frequency: Frequency = "daily",
 ) -> BarsResponse:
     require_known(data, [benchmark, strategy])
-    benchmark_means, strategy_means = bucket_means(data, benchmark, strategy, start, end, frequency)
+    window = window_of(data, start, end)
+    benchmark_means, strategy_means = bucket_means(window, benchmark, strategy, frequency)
     return BarsResponse(
         categories=BUCKET_LABELS if benchmark_means else [],
         series=[
