@@ -23,7 +23,7 @@ _Avoid_: Price, NAV
 ## Windows
 
 **Window**:
-The date range a chart covers, always ending at the latest available date unless Custom. Chosen from a preset (5D, 1M, 3M, 1Y, 5Y, Max) or a custom date range.
+The date range a chart covers, always ending at the latest available date unless Custom. Chosen from a preset (5D, 1M, 3M, 1Y, 5Y, Max) or a custom date range. A preset counts back in calendar time from the latest date, so 5D is the last week: five Daily Returns.
 _Avoid_: Period (reserved for Drawdown Period), range, lookback
 
 **Custom Window**:

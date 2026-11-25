@@ -28,8 +28,8 @@ interface Shift {
   months?: number
 }
 
-/** How far back each preset reaches from the latest date; Max is the whole history. */
-const LOOKBACK: Record<Exclude<WindowPreset, 'Max'>, Shift> = {
+/** The span each preset covers, counted back from the latest date; Max is the whole history. */
+const PRESET_SPAN: Record<Exclude<WindowPreset, 'Max'>, Shift> = {
   '5D': { days: -7 },
   '1M': { months: -1 },
   '3M': { months: -3 },
@@ -52,7 +52,7 @@ function shift(iso: string, { days = 0, months = 0 }: Shift): string {
 export function resolveWindow(window: Window, available: DateRange): DateRange {
   if (window.preset === 'Custom') return { start: window.start, end: window.end }
   if (window.preset === 'Max') return available
-  const start = shift(available.end, LOOKBACK[window.preset])
+  const start = shift(available.end, PRESET_SPAN[window.preset])
   return { start: start < available.start ? available.start : start, end: available.end }
 }
 

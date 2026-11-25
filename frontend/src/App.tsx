@@ -23,10 +23,7 @@ export default function App() {
         ) : indices.isError ? (
           <p className="text-destructive">Could not reach the backend: {indices.error.message}</p>
         ) : (
-          <ComparisonCard
-            indices={indices.data.indices}
-            available={indices.data}
-          />
+          <ComparisonCard history={indices.data} />
         )}
       </main>
     </div>

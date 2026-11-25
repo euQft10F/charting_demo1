@@ -6,14 +6,14 @@ def test_lists_indices_with_available_date_range(client: TestClient) -> None:
 
     assert res.status_code == 200
     assert res.json() == {
-        "indices": ["Bench", "Strat"],
+        "indices": ["Index A", "Index B"],
         "start": "2024-01-01",
         "end": "2024-01-05",
     }
 
 
 def test_returns_levels_of_requested_indices_in_request_order(client: TestClient) -> None:
-    res = client.get("/api/levels", params={"names": ["Strat", "Bench"]})
+    res = client.get("/api/levels", params={"names": ["Index B", "Index A"]})
 
     assert res.status_code == 200
     body = res.json()
@@ -25,12 +25,12 @@ def test_returns_levels_of_requested_indices_in_request_order(client: TestClient
         "2024-01-05",
     ]
     assert body["series"] == [
-        {"name": "Strat", "values": [100.0, 102.0, 104.0, 90.0, 95.0]},
-        {"name": "Bench", "values": [100.0, 110.0, 99.0, 105.0, 120.0]},
+        {"name": "Index B", "values": [100.0, 102.0, 104.0, 90.0, 95.0]},
+        {"name": "Index A", "values": [100.0, 110.0, 99.0, 105.0, 120.0]},
     ]
 
 
 def test_unknown_index_is_rejected(client: TestClient) -> None:
-    res = client.get("/api/levels", params={"names": ["Bench", "Nope"]})
+    res = client.get("/api/levels", params={"names": ["Index A", "Nope"]})
 
     assert res.status_code == 404

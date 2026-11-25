@@ -14,8 +14,8 @@ def dataset() -> pd.DataFrame:
     dates = pd.bdate_range("2024-01-01", periods=5)
     return pd.DataFrame(
         {
-            "Bench": [100.0, 110.0, 99.0, 105.0, 120.0],
-            "Strat": [100.0, 102.0, 104.0, 90.0, 95.0],
+            "Index A": [100.0, 110.0, 99.0, 105.0, 120.0],
+            "Index B": [100.0, 102.0, 104.0, 90.0, 95.0],
         },
         index=dates,
     )

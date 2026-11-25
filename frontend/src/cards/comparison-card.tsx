@@ -7,15 +7,18 @@ import { LevelsChart } from '@/charts/lwc/levels-chart'
 import { ChartCard } from '@/components/chart-card'
 import { WindowFields } from '@/components/window-fields'
 import { defaultWindowValues, refineWindow, toWindow, useAppliedValues, windowShape } from '@/lib/window-form'
+import type { IndicesResponse } from '@/lib/api'
 import { useLevels } from '@/lib/queries'
 import { resolveWindow, sliceLevels, type DateRange } from '@/lib/window'
 
-interface CardProps {
-  indices: string[]
-  available: DateRange
+interface ComparisonCardProps {
+  /** The Indices on offer and the dates their history covers. */
+  history: IndicesResponse
 }
 
-export function ComparisonCard({ indices, available }: CardProps) {
+export function ComparisonCard({ history }: ComparisonCardProps) {
+  const { indices } = history
+  const available: DateRange = history
   const schema = useMemo(() => z.object(windowShape).superRefine(refineWindow(available)), [available])
   const form = useForm({
     resolver: zodResolver(schema),
