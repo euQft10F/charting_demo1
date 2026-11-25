@@ -1,6 +1,6 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
 
-import { fetchDrawdowns, fetchLevels, fetchIndices, type LevelsResponse } from '@/lib/api'
+import { fetchDrawdownPeriods, fetchDrawdowns, fetchLevels, fetchIndices, type LevelsResponse } from '@/lib/api'
 import type { DateRange, PairLevels } from '@/lib/window'
 
 export function useIndices() {
@@ -39,6 +39,16 @@ export function useDrawdowns(benchmark: string, strategy: string, range: DateRan
   return useQuery({
     queryKey: ['drawdowns', benchmark, strategy, range.start, range.end],
     queryFn: () => fetchDrawdowns(benchmark, strategy, range),
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** The Benchmark's `n` deepest Drawdown Periods over a Window; the backend calculates them. */
+export function useDrawdownPeriods(benchmark: string, range: DateRange, n: number) {
+  return useQuery({
+    queryKey: ['drawdown-periods', benchmark, range.start, range.end, n],
+    queryFn: () => fetchDrawdownPeriods(benchmark, range, n),
     staleTime: Infinity,
     placeholderData: keepPreviousData,
   })

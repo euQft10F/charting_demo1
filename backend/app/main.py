@@ -7,7 +7,14 @@ import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException, Query
 
 from app.data import get_dataset
-from app.schemas import DrawdownsResponse, IndicesResponse, LevelsResponse, Series
+from app.schemas import (
+    DrawdownPeriod,
+    DrawdownPeriodsResponse,
+    DrawdownsResponse,
+    IndicesResponse,
+    LevelsResponse,
+    Series,
+)
 
 
 @asynccontextmanager
@@ -40,6 +47,40 @@ def require_known(data: pd.DataFrame, names: list[str]) -> None:
 def drawdown(values: pd.Series) -> pd.Series:
     """Drawdown in %: Level over its running maximum so far, minus 1."""
     return (values / values.cummax() - 1) * 100
+
+
+def deepest_drawdown_periods(values: pd.Series, n: int) -> list[DrawdownPeriod]:
+    """Peak-to-trough spans of the n deepest Drawdown Episodes, in chronological order.
+
+    An episode starts at a peak, the last day at 0 Drawdown, and lasts while the Level stays below
+    it; an episode still under water on the last day counts.
+    """
+    dd = drawdown(values)
+    at_peak = dd == 0
+    underwater = dd[~at_peak]
+    if underwater.empty:
+        return []
+    peak_dates = dd.index[at_peak]
+    # Each day at 0 opens a new episode number, which the under-water days after it share.
+    episode = at_peak.cumsum()[underwater.index]
+    by_episode = underwater.groupby(episode)
+    deepest = by_episode.min().nsmallest(n).index.sort_values()
+    troughs = by_episode.idxmin()
+    return [DrawdownPeriod(start=peak_dates[e - 1].date(), end=troughs[e].date()) for e in deepest]
+
+
+@app.get("/api/drawdown-periods")
+def drawdown_periods(
+    data: Dataset,
+    benchmark: str,
+    start: dt.date,
+    end: dt.date,
+    n: Annotated[int, Query(ge=1, le=10)] = 2,
+) -> DrawdownPeriodsResponse:
+    require_known(data, [benchmark])
+    # As for Drawdowns, the running maximum starts afresh on the first day of the Window.
+    window = data.loc[pd.Timestamp(start) : pd.Timestamp(end), benchmark]
+    return DrawdownPeriodsResponse(periods=deepest_drawdown_periods(window, n))
 
 
 @app.get("/api/drawdowns")

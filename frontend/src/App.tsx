@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ComparisonCard } from '@/cards/comparison-card'
 import { DrawdownCard } from '@/cards/drawdown-card'
+import { DrawdownPeriodsCard } from '@/cards/drawdown-periods-card'
 import { Spinner } from '@/components/ui/spinner'
 import { DEFAULT_AXIS_SIDE, type AxisSide } from '@/lib/axis-side'
 import { useIndices } from '@/lib/queries'
@@ -32,6 +33,7 @@ export default function App() {
           <>
             <ComparisonCard history={indices.data} axisSide={axisSide} onAxisSideChange={setAxisSide} />
             <DrawdownCard history={indices.data} axisSide={axisSide} />
+            <DrawdownPeriodsCard history={indices.data} axisSide={axisSide} />
           </>
         )}
       </main>

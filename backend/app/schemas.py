@@ -25,3 +25,16 @@ class DrawdownsResponse(BaseModel):
     dates: list[dt.date]
     benchmark: Series | None
     strategy: Series | None
+
+
+class DrawdownPeriod(BaseModel):
+    """From the peak to the trough of one Drawdown Episode."""
+
+    start: dt.date
+    end: dt.date
+
+
+class DrawdownPeriodsResponse(BaseModel):
+    """The Benchmark's deepest Drawdown Periods in the Window, in chronological order."""
+
+    periods: list[DrawdownPeriod]

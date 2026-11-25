@@ -30,6 +30,13 @@ export const drawdownsResponseSchema = z.object({
 })
 export type DrawdownsResponse = z.infer<typeof drawdownsResponseSchema>
 
+export const drawdownPeriodsResponseSchema = z.object({
+  /** Peak to trough of each deep Drawdown Episode, in chronological order. */
+  periods: z.array(z.object({ start: z.iso.date(), end: z.iso.date() })),
+})
+export type DrawdownPeriodsResponse = z.infer<typeof drawdownPeriodsResponseSchema>
+export type DrawdownPeriod = DrawdownPeriodsResponse['periods'][number]
+
 async function getJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(path)
   if (!res.ok) {
@@ -58,4 +65,14 @@ export function fetchDrawdowns(
   if (benchmark) params.set('benchmark', benchmark)
   if (strategy) params.set('strategy', strategy)
   return getJson(`/api/drawdowns?${params}`, drawdownsResponseSchema)
+}
+
+/** The Benchmark's `n` deepest Drawdown Periods over a range. */
+export function fetchDrawdownPeriods(
+  benchmark: string,
+  range: { start: string; end: string },
+  n: number,
+): Promise<DrawdownPeriodsResponse> {
+  const params = new URLSearchParams({ benchmark, ...range, n: String(n) })
+  return getJson(`/api/drawdown-periods?${params}`, drawdownPeriodsResponseSchema)
 }
