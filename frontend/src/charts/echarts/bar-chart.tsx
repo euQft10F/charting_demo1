@@ -11,7 +11,7 @@ const ZERO_LINE: BarSeriesOption['markLine'] = {
   silent: true,
   symbol: 'none',
   label: { show: false },
-  lineStyle: { color: CHART_THEME.text, opacity: 0.4, type: 'solid', width: 1 },
+  lineStyle: { color: CHART_THEME.zeroLine, type: 'solid', width: 1 },
   data: [{ yAxis: 0 }],
 }
 

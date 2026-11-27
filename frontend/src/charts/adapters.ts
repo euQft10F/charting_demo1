@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import { lazy, type ComponentType } from 'react'
 
 import { BarChart as EchartsBarChart } from '@/charts/echarts/bar-chart'
 import { ComparisonChart as EchartsComparisonChart } from '@/charts/echarts/comparison-chart'
@@ -29,6 +29,19 @@ interface ChartAdapter {
   BarChart: ComponentType<BarChartProps>
 }
 
+/**
+ * Plotly.js is several times the size of the other libraries, so its renderers load on first use
+ * (ChartCard shows a spinner meanwhile) instead of with the page.
+ */
+const lazyPlotly = <K extends keyof ChartAdapter>(name: K) =>
+  lazy(() => import('@/charts/plotly').then((m) => ({ default: m[name] })))
+const PLOTLY: ChartAdapter = {
+  ComparisonChart: lazyPlotly('ComparisonChart'),
+  DrawdownChart: lazyPlotly('DrawdownChart'),
+  DrawdownPeriodsChart: lazyPlotly('DrawdownPeriodsChart'),
+  BarChart: lazyPlotly('BarChart'),
+}
+
 export const CHART_ADAPTERS: Record<ChartingLibrary, ChartAdapter> = {
   'lightweight-charts': {
     ComparisonChart: LwcComparisonChart,
@@ -48,4 +61,5 @@ export const CHART_ADAPTERS: Record<ChartingLibrary, ChartAdapter> = {
     DrawdownPeriodsChart: EchartsDrawdownPeriodsChart,
     BarChart: EchartsBarChart,
   },
+  plotly: PLOTLY,
 }

@@ -8,6 +8,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 
+import { FLAT_DRAWDOWN_RANGE } from '@/charts/drawdown-axis'
 import { shadedAreaOptions, themedChartOptions, toData } from '@/charts/lwc/shared'
 import type { DrawdownChartProps } from '@/charts/types'
 import { oppositeSide } from '@/lib/axis-side'
@@ -26,8 +27,7 @@ function drawdownSeriesOptions(line: string, fill: string): BaselineSeriesPartia
     autoscaleInfoProvider: (original: () => AutoscaleInfo | null) => {
       const info = original()
       if (!info?.priceRange) return info
-      // A Window with no Drawdown at all is flat at 0; give it room below so 0 stays the top.
-      const minValue = info.priceRange.minValue < 0 ? info.priceRange.minValue : -1
+      const minValue = info.priceRange.minValue < 0 ? info.priceRange.minValue : FLAT_DRAWDOWN_RANGE[0]
       return { ...info, priceRange: { minValue, maxValue: 0 } }
     },
   }

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
@@ -54,16 +54,22 @@ export function ChartCard({
           ) : emptyReason ? (
             <Message>{emptyReason}</Message>
           ) : (
-            children
+            // A lazily loaded renderer suspends until its library arrives.
+            <Suspense fallback={<FillSpinner />}>{children}</Suspense>
           )}
-          {isFetching && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60">
-              <Spinner className="size-8 text-primary" />
-            </div>
-          )}
+          {isFetching && <FillSpinner />}
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+/** A spinner over the whole chart area. */
+function FillSpinner() {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60">
+      <Spinner className="size-8 text-primary" />
+    </div>
   )
 }
 

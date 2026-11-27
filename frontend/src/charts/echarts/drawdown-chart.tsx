@@ -1,5 +1,6 @@
 import type { EChartsOption, LineSeriesOption } from 'echarts'
 
+import { FLAT_DRAWDOWN_RANGE, hasDrawdown } from '@/charts/drawdown-axis'
 import { EChart } from '@/charts/echarts/echart'
 import { axisTooltip, lineSeries, shadedArea, TIME_SERIES_OPTION, toData, valueAxis } from '@/charts/echarts/shared'
 import { formatPercent } from '@/charts/format'
@@ -8,7 +9,6 @@ import { CHART_THEME } from '@/lib/colors'
 
 /** ECharts renderer for the Drawdown Chart: both Drawdowns, overlaid, hanging from 0. */
 export function DrawdownChart({ dates, benchmark, strategy, axisSide }: DrawdownChartProps) {
-  const flat = ![benchmark, strategy].some((values) => values?.some((v) => v < 0))
   // The Benchmark comes first, so the Strategy overlays it. A missing Index draws nothing.
   const series = [
     { id: 'benchmark', name: 'Benchmark', values: benchmark, color: CHART_THEME.benchmark, fill: CHART_THEME.benchmarkFill },
@@ -20,9 +20,12 @@ export function DrawdownChart({ dates, benchmark, strategy, axisSide }: Drawdown
   const option: EChartsOption = {
     ...TIME_SERIES_OPTION,
     tooltip: axisTooltip({ formatValue: formatPercent }),
-    // Drawdowns are never above 0, so the axis tops out at 0. A Window with no Drawdown at all is
-    // flat at 0; give it room below so 0 stays the top.
-    yAxis: { ...valueAxis(axisSide, formatPercent), max: 0, min: flat ? -1 : undefined },
+    // Drawdowns are never above 0, so the axis tops out at 0; a flat Window takes FLAT_DRAWDOWN_RANGE.
+    yAxis: {
+      ...valueAxis(axisSide, formatPercent),
+      max: 0,
+      min: hasDrawdown(benchmark, strategy) ? undefined : FLAT_DRAWDOWN_RANGE[0],
+    },
     series,
   }
 

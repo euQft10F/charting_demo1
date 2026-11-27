@@ -32,7 +32,7 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
         <CartesianGrid {...GRID_STYLE} />
         <XAxis dataKey="category" {...AXIS_STYLE} interval={0} />
         <YAxis orientation={axisSide} {...AXIS_STYLE} tickFormatter={formatPercent} />
-        <ReferenceLine y={0} stroke={CHART_THEME.text} strokeOpacity={0.4} />
+        <ReferenceLine y={0} stroke={CHART_THEME.zeroLine} />
         <Tooltip
           isAnimationActive={false}
           cursor={{ fill: CHART_THEME.grid }}
