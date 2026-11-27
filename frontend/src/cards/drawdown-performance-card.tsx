@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 
-import { BarChart } from '@/charts/lwc/bar-chart'
+import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
 import { WindowFields } from '@/components/window-fields'
 import type { IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
+import type { ChartingLibrary } from '@/lib/charting-library'
 import { toBarSeries } from '@/lib/bars'
 import { useDrawdownPerformance } from '@/lib/queries'
 import { useWindowForm } from '@/lib/window-form'
@@ -15,9 +16,12 @@ interface DrawdownPerformanceCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the value axis sits. */
   axisSide: AxisSide
+  /** The shared Charting Library that renders the chart. */
+  library: ChartingLibrary
 }
 
-export function DrawdownPerformanceCard({ history, axisSide }: DrawdownPerformanceCardProps) {
+export function DrawdownPerformanceCard({ history, axisSide, library }: DrawdownPerformanceCardProps) {
+  const { BarChart } = CHART_ADAPTERS[library]
   const { form, applied, range } = useWindowForm(history)
   const [count, setCount] = useState(DEFAULT_PERIOD_COUNT)
 

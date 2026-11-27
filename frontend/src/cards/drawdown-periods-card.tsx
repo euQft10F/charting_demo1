@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-import { DrawdownPeriodsChart } from '@/charts/lwc/drawdown-periods-chart'
+import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
 import { WindowFields } from '@/components/window-fields'
 import type { DrawdownPeriod, IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
+import type { ChartingLibrary } from '@/lib/charting-library'
 import { useDrawdownPeriods, useWindowLevels } from '@/lib/queries'
 import type { DateRange } from '@/lib/window'
 import { useWindowForm } from '@/lib/window-form'
@@ -19,9 +20,12 @@ interface DrawdownPeriodsCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the Level axis sits. */
   axisSide: AxisSide
+  /** The shared Charting Library that renders the chart. */
+  library: ChartingLibrary
 }
 
-export function DrawdownPeriodsCard({ history, axisSide }: DrawdownPeriodsCardProps) {
+export function DrawdownPeriodsCard({ history, axisSide, library }: DrawdownPeriodsCardProps) {
+  const { DrawdownPeriodsChart } = CHART_ADAPTERS[library]
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available)

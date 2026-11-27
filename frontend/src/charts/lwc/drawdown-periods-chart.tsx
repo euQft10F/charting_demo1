@@ -11,20 +11,10 @@ import {
 import { useEffect, useRef } from 'react'
 
 import { themedChartOptions, toData } from '@/charts/lwc/shared'
+import type { DrawdownPeriodsChartProps } from '@/charts/types'
 import type { DrawdownPeriod } from '@/lib/api'
-import { oppositeSide, type AxisSide } from '@/lib/axis-side'
+import { oppositeSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
-
-export interface DrawdownPeriodsChartProps {
-  dates: string[]
-  /** Benchmark Levels, rebased or raw. */
-  benchmark: number[]
-  /** Strategy Levels, rebased or raw. */
-  strategy: number[]
-  /** Drawdown Periods to shade, peak to trough. */
-  periods: DrawdownPeriod[]
-  axisSide: AxisSide
-}
 
 interface ChartHandles {
   chart: IChartApi

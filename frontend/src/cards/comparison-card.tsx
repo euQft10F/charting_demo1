@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 
-import { ComparisonChart } from '@/charts/lwc/comparison-chart'
+import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { WindowFields } from '@/components/window-fields'
 import { useWindowForm } from '@/lib/window-form'
 import type { IndicesResponse } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
+import type { ChartingLibrary } from '@/lib/charting-library'
 import { CHART_THEME } from '@/lib/colors'
 import { cumulativeDifference } from '@/lib/comparison'
 import { useWindowLevels } from '@/lib/queries'
@@ -17,10 +18,13 @@ interface ComparisonCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the Level axis sits. */
   axisSide: AxisSide
+  /** The shared Charting Library that renders the chart. */
+  library: ChartingLibrary
   onAxisSideChange: (side: AxisSide) => void
 }
 
-export function ComparisonCard({ history, axisSide, onAxisSideChange }: ComparisonCardProps) {
+export function ComparisonCard({ history, axisSide, library, onAxisSideChange }: ComparisonCardProps) {
+  const { ComparisonChart } = CHART_ADAPTERS[library]
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available)

@@ -9,17 +9,9 @@ import {
 import { useEffect, useRef } from 'react'
 
 import { shadedAreaOptions, themedChartOptions, toData } from '@/charts/lwc/shared'
-import { oppositeSide, type AxisSide } from '@/lib/axis-side'
+import type { DrawdownChartProps } from '@/charts/types'
+import { oppositeSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
-
-export interface DrawdownChartProps {
-  dates: string[]
-  /** Benchmark Drawdown in %; undefined when no Benchmark is chosen. */
-  benchmark?: number[]
-  /** Strategy Drawdown in %; undefined when no Strategy is chosen. */
-  strategy?: number[]
-  axisSide: AxisSide
-}
 
 interface ChartHandles {
   chart: IChartApi

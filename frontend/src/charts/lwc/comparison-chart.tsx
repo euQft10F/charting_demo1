@@ -9,22 +9,9 @@ import {
 import { useEffect, useRef } from 'react'
 
 import { shadedAreaOptions, themedChartOptions, toData } from '@/charts/lwc/shared'
-import { oppositeSide, type AxisSide } from '@/lib/axis-side'
+import type { ComparisonChartProps } from '@/charts/types'
+import { oppositeSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
-
-export interface ComparisonChartProps {
-  dates: string[]
-  /** Benchmark Levels, rebased or raw. */
-  benchmark: number[]
-  /** Strategy Levels, rebased or raw. */
-  strategy: number[]
-  /** Cumulative Difference in %. */
-  difference: number[]
-  /** Log (true) or linear (false) Level axis. */
-  logScale: boolean
-  /** The side the Level axis sits on; the Cumulative Difference axis takes the other. */
-  axisSide: AxisSide
-}
 
 interface ChartHandles {
   chart: IChartApi

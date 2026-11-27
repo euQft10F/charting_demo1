@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 
-import { BarChart } from '@/charts/lwc/bar-chart'
+import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { SegmentedField } from '@/components/segmented-field'
 import { WindowFields } from '@/components/window-fields'
 import { RETURN_FREQUENCIES, type IndicesResponse, type ReturnFrequency } from '@/lib/api'
 import type { AxisSide } from '@/lib/axis-side'
+import type { ChartingLibrary } from '@/lib/charting-library'
 import { toBarSeries } from '@/lib/bars'
 import { usePerformanceBuckets } from '@/lib/queries'
 import { useWindowForm } from '@/lib/window-form'
@@ -15,9 +16,12 @@ interface PerformanceBucketsCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the value axis sits. */
   axisSide: AxisSide
+  /** The shared Charting Library that renders the chart. */
+  library: ChartingLibrary
 }
 
-export function PerformanceBucketsCard({ history, axisSide }: PerformanceBucketsCardProps) {
+export function PerformanceBucketsCard({ history, axisSide, library }: PerformanceBucketsCardProps) {
+  const { BarChart } = CHART_ADAPTERS[library]
   const { form, applied, range } = useWindowForm(history)
   const [frequency, setFrequency] = useState<ReturnFrequency>('daily')
 

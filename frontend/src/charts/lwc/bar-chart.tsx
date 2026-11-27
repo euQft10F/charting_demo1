@@ -14,16 +14,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 
 import { themedChartOptions } from '@/charts/lwc/shared'
-import type { AxisSide } from '@/lib/axis-side'
-
-export interface BarChartProps {
-  /** One label per group of bars, left to right. */
-  categories: string[]
-  /** One bar per series in every category; `values[i]` belongs to `categories[i]`. */
-  series: { name: string; color: string; values: number[] }[]
-  /** The side the value axis sits on. */
-  axisSide: AxisSide
-}
+import type { BarChartProps } from '@/charts/types'
 
 /** Fraction of each category's width taken by its group of bars; the rest is the gap between groups. */
 const GROUP_FILL = 0.7
