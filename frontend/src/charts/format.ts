@@ -9,3 +9,5 @@ export const formatFullDate = (iso: string) => fullDate.format(asUtcDate(iso))
 const upToTwoDecimals = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
 export const formatLevel = (value: number) => upToTwoDecimals.format(value)
 export const formatPercent = (value: number) => `${upToTwoDecimals.format(value)}%`
+/** Bar tooltips: always two decimals, so the values line up. */
+export const formatBarValue = (value: number) => `${value.toFixed(2)}%`

@@ -1,8 +1,8 @@
 import type { BarSeriesOption, EChartsOption } from 'echarts'
 
 import { EChart } from '@/charts/echarts/echart'
-import { axisTooltip, categoryAxis, GRID, valueAxis } from '@/charts/echarts/shared'
-import { formatPercent } from '@/charts/format'
+import { axisTooltip, BASE_OPTION, categoryAxis, valueAxis } from '@/charts/echarts/shared'
+import { formatBarValue, formatPercent } from '@/charts/format'
 import type { BarChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 
@@ -21,9 +21,8 @@ const ZERO_LINE: BarSeriesOption['markLine'] = {
  */
 export function BarChart({ categories, series, axisSide }: BarChartProps) {
   const option: EChartsOption = {
-    animation: false,
-    grid: GRID,
-    tooltip: axisTooltip({ formatValue: (v) => `${v.toFixed(2)}%`, shadow: true }),
+    ...BASE_OPTION,
+    tooltip: axisTooltip({ formatValue: formatBarValue, shadow: true }),
     xAxis: categoryAxis(categories),
     yAxis: valueAxis(axisSide, formatPercent),
     series: series.map(

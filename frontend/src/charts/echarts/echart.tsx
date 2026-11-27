@@ -48,14 +48,13 @@ export function EChart({ option, resetOn }: EChartProps) {
     return () => {
       observer.disconnect()
       instance.dispose()
-      chart.current = null
       lastResetOn.current = undefined
     }
   }, [])
 
+  // Runs after the effect above, so the instance always exists.
   useEffect(() => {
-    const instance = chart.current
-    if (!instance) return
+    const instance = chart.current!
     // A series can come and go (a Drawdown with no Strategy), and merging would leave it drawn;
     // replacing the axes too drops settings the new option leaves out (a log axis's bounds).
     const reset = lastResetOn.current !== resetOn

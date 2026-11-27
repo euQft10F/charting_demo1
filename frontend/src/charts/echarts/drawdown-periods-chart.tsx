@@ -1,19 +1,16 @@
 import type { EChartsOption } from 'echarts'
 
 import { EChart } from '@/charts/echarts/echart'
-import { axisTooltip, dateAxis, GRID, lineSeries, toData, valueAxis, ZOOM } from '@/charts/echarts/shared'
-import { formatFullDate, formatLevel } from '@/charts/format'
+import { axisTooltip, lineSeries, TIME_SERIES_OPTION, toData, toTime, valueAxis } from '@/charts/echarts/shared'
+import { formatLevel } from '@/charts/format'
 import type { DrawdownPeriodsChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 
 /** ECharts renderer for the Drawdown Periods Chart: both Levels with shaded Periods. */
 export function DrawdownPeriodsChart({ dates, benchmark, strategy, periods, axisSide }: DrawdownPeriodsChartProps) {
   const option: EChartsOption = {
-    animation: false,
-    grid: GRID,
-    dataZoom: ZOOM,
-    tooltip: axisTooltip({ formatLabel: formatFullDate, formatValue: formatLevel }),
-    xAxis: dateAxis(),
+    ...TIME_SERIES_OPTION,
+    tooltip: axisTooltip({ formatValue: formatLevel }),
     yAxis: valueAxis(axisSide, formatLevel, { scale: true }),
     series: [
       {
@@ -23,7 +20,7 @@ export function DrawdownPeriodsChart({ dates, benchmark, strategy, periods, axis
         markArea: {
           silent: true,
           itemStyle: { color: CHART_THEME.periodBand },
-          data: periods.map((p) => [{ xAxis: p.start }, { xAxis: p.end }]),
+          data: periods.map((p) => [{ xAxis: toTime(p.start) }, { xAxis: toTime(p.end) }]),
         },
       },
       lineSeries('strategy', 'Strategy', CHART_THEME.strategy, toData(dates, strategy)),
