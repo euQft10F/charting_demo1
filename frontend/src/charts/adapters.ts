@@ -4,6 +4,10 @@ import { BarChart as LwcBarChart } from '@/charts/lwc/bar-chart'
 import { ComparisonChart as LwcComparisonChart } from '@/charts/lwc/comparison-chart'
 import { DrawdownChart as LwcDrawdownChart } from '@/charts/lwc/drawdown-chart'
 import { DrawdownPeriodsChart as LwcDrawdownPeriodsChart } from '@/charts/lwc/drawdown-periods-chart'
+import { BarChart as PlotlyBarChart } from '@/charts/plotly/bar-chart'
+import { ComparisonChart as PlotlyComparisonChart } from '@/charts/plotly/comparison-chart'
+import { DrawdownChart as PlotlyDrawdownChart } from '@/charts/plotly/drawdown-chart'
+import { DrawdownPeriodsChart as PlotlyDrawdownPeriodsChart } from '@/charts/plotly/drawdown-periods-chart'
 import { BarChart as RechartsBarChart } from '@/charts/recharts/bar-chart'
 import { ComparisonChart as RechartsComparisonChart } from '@/charts/recharts/comparison-chart'
 import { DrawdownChart as RechartsDrawdownChart } from '@/charts/recharts/drawdown-chart'
@@ -37,5 +41,11 @@ export const CHART_ADAPTERS: Record<ChartingLibrary, ChartAdapter> = {
     DrawdownChart: RechartsDrawdownChart,
     DrawdownPeriodsChart: RechartsDrawdownPeriodsChart,
     BarChart: RechartsBarChart,
+  },
+  plotly: {
+    ComparisonChart: PlotlyComparisonChart,
+    DrawdownChart: PlotlyDrawdownChart,
+    DrawdownPeriodsChart: PlotlyDrawdownPeriodsChart,
+    BarChart: PlotlyBarChart,
   },
 }

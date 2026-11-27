@@ -3,7 +3,7 @@
 A prototype dashboard comparing a Strategy against a Benchmark over a chosen Window, using synthetic Index data. Domain terms are defined in [GLOSSARY.md](GLOSSARY.md); the full spec is GitHub issue #1.
 
 - `backend/`: FastAPI (Python 3.14, uv). Generates the synthetic Indices in memory at startup and serves the analytics.
-- `frontend/`: React 19 + TypeScript + Vite + shadcn/ui. A global switcher renders every chart with Lightweight Charts or Recharts; workarounds each library needed are in [docs/charting-libraries.md](docs/charting-libraries.md). The Vite dev server proxies `/api` to the backend.
+- `frontend/`: React 19 + TypeScript + Vite + shadcn/ui. A global switcher renders every chart with Lightweight Charts, Recharts or Plotly.js; workarounds each library needed are in [docs/charting-libraries.md](docs/charting-libraries.md). The Vite dev server proxies `/api` to the backend.
 
 ## Running
 

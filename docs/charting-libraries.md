@@ -24,3 +24,15 @@ These notes record where a library needed a workaround, to weigh in the final ch
 - **Animations off** (`isAnimationActive={false}`) everywhere: with ~1,500 points per series at Max they make Window changes feel sluggish.
 - **No built-in crosshair value labels or pan/zoom.** A custom tooltip (`ChartTooltip`) lists every series at the hovered date or category.
 - Strengths: native category axis and grouped bars, so the bar charts need no workaround; declarative JSX, and styling via props matches the dashboard easily; SVG output is easy to inspect.
+
+## Plotly.js
+
+- **Bundle size.** The full `plotly.js` is ~3.5 MB minified; the adapters use `plotly.js-basic-dist-min` (scatter and bar traces only), still ~1.2 MB minified / ~400 KB gzipped, far more than the other libraries. It ships no types, so `plotly.d.ts` points it at `@types/plotly.js`.
+- **No React component.** `react-plotly.js` is an old class-component wrapper, so `PlotlyChart` calls `Plotly.react` from an effect, purges on unmount, and resizes through a `ResizeObserver` (`config.responsive` only follows window resizes, not the card's).
+- **Weekend gaps on the date axis.** A `type: 'date'` axis spaces points in calendar time; `rangebreaks` on weekends make it a business-day axis like the others. This works because the synthetic Indices have no holidays: real data would need every holiday listed as a break too.
+- **Overlay axes draw on top.** An axis with `overlaying` is drawn above the one it overlays whatever the trace order, so the Comparison Chart puts the Cumulative Difference on the base axis and the Levels on the overlay to keep the shaded area behind the lines.
+- **Overlay axes sync their ticks by default**, giving odd Level ticks (181.8, 220, 258.2) and no grid of their own; the Level axis sets `tickmode: 'auto'` and `showgrid: true`.
+- **Zoom kept by `uirevision`.** Each chart passes its Window (plus log/linear on the Comparison Chart, since the zoom range is in axis units) as `uirevision`, so the zoom survives Rebase but resets on a new Window. Value axes are `fixedrange` so only the x axis zooms; unlike Lightweight Charts, the value axis then fits the whole Window, not the zoomed part.
+- **Drawdown axis capped at 0** with `autorangeoptions.maxallowed: 0` (autorange otherwise pads above 0), plus a fixed `[-1, 0]` range for a Window with no Drawdown.
+- **Unified tooltip is fixed-format.** `hovermode: 'x unified'` lists every series as `name : value`; the order follows the trace order and the look is limited to `hoverlabel` colours and fonts, so it can't match the card-style tooltip of the other libraries exactly.
+- Strengths: native date and category axes, grouped bars (`barmode: 'group'`), shaded x-ranges (`layout.shapes` with `yref: 'paper'`, placed by date so a Period needn't fall on a date in the data), log axes and drag-to-zoom all built in; the figures are plain data, so each adapter is a single object literal.
