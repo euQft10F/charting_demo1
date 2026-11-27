@@ -2,7 +2,9 @@
 
 Each Charting Library has one adapter per chart under `frontend/src/charts/<library>/`, all taking the library-agnostic props in `frontend/src/charts/types.ts`. `frontend/src/charts/adapters.ts` maps each library to its renderers; the cards pick theirs from the global Charting Library switcher. Forms, queries and calculations live in the cards and `lib/`, so switching library only swaps renderers and makes no backend requests.
 
-These notes record where a library needed a workaround, to weigh in the final choice.
+The **Compare libraries** view (header toggle) shows one chart, chosen from the five, rendered by all four libraries side by side, driven by that chart's single form. Each card takes a list of libraries and `ChartCard` draws one panel per library from the same data, so the four renderers always show identical inputs.
+
+These notes record where each library needed a workaround, and what it still can't do, to weigh in the final choice. The [overall fit](#overall-fit) section at the end sums up.
 
 ## Lightweight Charts
 
@@ -49,3 +51,29 @@ These notes record where a library needed a workaround, to weigh in the final ch
 - **Drawdown axis capped at 0** with `autorangeoptions.maxallowed: 0` (autorange otherwise pads above 0), plus a fixed `[-1, 0]` range for a Window with no Drawdown.
 - **Unified tooltip is fixed-format.** `hovermode: 'x unified'` lists every series as `name : value`; the order follows the trace order and the look is limited to `hoverlabel` colours and fonts, so it can't match the card-style tooltip of the other libraries exactly.
 - Strengths: native date and category axes, grouped bars (`barmode: 'group'`), shaded x-ranges (`layout.shapes` with `yref: 'paper'`, placed by date so a Period needn't fall on a date in the data), log axes and drag-to-zoom all built in; the figures are plain data, so each adapter is a single object literal.
+
+## Overall fit
+
+How each library handled the five charts, with the workaround effort and what remains a limitation.
+
+| | Lightweight Charts | Recharts | Apache ECharts | Plotly.js |
+|---|---|---|---|---|
+| Comparison Chart (two axes, log scale, shaded difference) | Native: two value axes, log mode, baseline series for the shaded difference | Works; log domain needs care | Works; log ticks need `customValues` | Works; overlay axis order and tick sync need fixing |
+| Drawdown Chart | Needs a custom autoscale to cap at 0 | Works | Works | Works |
+| Drawdown Periods Chart (shaded x-ranges) | Custom primitive | `ReferenceArea`, but only on dates in the data | Native `markArea` | Native `layout.shapes` |
+| Bar charts: Performance Buckets, Drawdown Performance (category axis, grouped bars) | Hardest: fake times, custom series, custom tooltip | Native | Native | Native |
+| Pan / zoom (time-series charts; the bar charts don't zoom in any library here) | Built in, value axis refits to the visible range | None | Built in (`dataZoom`) | Built in (x only) |
+| Hover values | Time series: crosshair with axis value labels, no tooltip. Bar charts: custom React overlay | Custom tooltip content, easy | HTML string formatter | Fixed format, limited styling |
+| Business-day x axis | Native | Category axis (by accident) | No: calendar spacing | Needs `rangebreaks` (weekends only) |
+| Bundle cost | Small | Medium | Medium (tree-shaken) | Large (lazy loaded) |
+| Performance at Max (~1,500 points × 3) | Best | Fine with animations off; SVG gets heavy with more data | Very good (canvas) | Fine; range breaks slow hover |
+
+**Lightweight Charts.** Best for the time-series charts: it's built for financial data, with a business-day axis, crosshair labels, last-value markers and smooth pan and zoom. It's the wrong tool for anything categorical: the two bar charts took the most custom code in the project (fake times, a hand-drawn grouped bar series, a hand-built tooltip), and Drawdown Period bands needed a primitive. Pick it if the site is mostly time series and the bar charts can live with custom code.
+
+**Recharts.** The most React-native: declarative JSX, easy styling, simple custom tooltips, and bar charts that need no workaround. The weak spots are on the time-series side: no real time axis, no pan or zoom, bands only on dates in the data, and SVG that slows with long histories. Good for a small dashboard with short Windows; weaker for analysts who want to zoom into six years of daily data.
+
+**Apache ECharts.** The broadest built-in coverage: time and category axes, grouped bars, `markArea` bands on any date, `dataZoom`, canvas performance. The cost is an imperative, option-object API that needs a React host component and careful `setOption` merging, plus fiddly log-axis ticks and a calendar-spaced time axis (weekend gaps). Every chart works without drawing anything by hand; the only stand-in is a `markLine` for the 0 line on the bar charts.
+
+**Plotly.js.** Everything needed is built in and each adapter is a single data literal, but it is by far the heaviest bundle, the business-day axis relies on `rangebreaks` (which would also need every holiday in real data), the tooltip can't be styled to match the dashboard, and the default overlay axis behaviour had to be overridden. Strongest for exploratory or scientific use; overkill for this dashboard.
+
+**Recommendation.** For a performance-charting site comparing two Indices, **Apache ECharts** is the best single choice: it renders all five charts with no hand-drawn parts, handles long daily histories smoothly and has zoom built in; its integration cost is a one-off host component, already written here. **Lightweight Charts** is the strongest alternative if the time-series charts matter most and the look of a trading terminal is wanted: its time-series experience is the best of the four, but its bar charts are workarounds. A hybrid (Lightweight Charts for time series, ECharts or Recharts for the bar charts) is possible but means two libraries to style and maintain.

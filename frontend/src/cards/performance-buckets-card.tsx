@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { SegmentedField } from '@/components/segmented-field'
 import { WindowFields } from '@/components/window-fields'
@@ -16,12 +15,11 @@ interface PerformanceBucketsCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the value axis sits. */
   axisSide: AxisSide
-  /** The shared Charting Library that renders the chart. */
-  library: ChartingLibrary
+  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
+  libraries: readonly ChartingLibrary[]
 }
 
-export function PerformanceBucketsCard({ history, axisSide, library }: PerformanceBucketsCardProps) {
-  const { BarChart } = CHART_ADAPTERS[library]
+export function PerformanceBucketsCard({ history, axisSide, libraries }: PerformanceBucketsCardProps) {
   const { form, applied, range } = useWindowForm(history)
   const [frequency, setFrequency] = useState<ReturnFrequency>('daily')
 
@@ -32,8 +30,9 @@ export function PerformanceBucketsCard({ history, axisSide, library }: Performan
     frequency,
   })
 
-  const bars = buckets.data && toBarSeries(buckets.data.series)
-  const [benchmark, strategy] = buckets.data?.series ?? []
+  const data = buckets.data
+  const bars = data && toBarSeries(data.series)
+  const [benchmark, strategy] = data?.series ?? []
 
   return (
     <ChartCard
@@ -46,13 +45,17 @@ export function PerformanceBucketsCard({ history, axisSide, library }: Performan
         </div>
       }
       legend={benchmark && strategy && { benchmark: benchmark.name, strategy: strategy.name }}
+      libraries={libraries}
       isFetching={buckets.isFetching}
       error={buckets.error}
       emptyReason={
-        buckets.data && buckets.data.categories.length === 0 ? 'Not enough data in this Window.' : undefined
+        data && data.categories.length === 0 ? 'Not enough data in this Window.' : undefined
       }
-    >
-      {buckets.data && bars && <BarChart categories={buckets.data.categories} series={bars} axisSide={axisSide} />}
-    </ChartCard>
+      renderChart={
+        data &&
+        bars &&
+        (({ BarChart }) => <BarChart categories={data.categories} series={bars} axisSide={axisSide} />)
+      }
+    />
   )
 }

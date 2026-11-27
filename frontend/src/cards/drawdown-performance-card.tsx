@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
 import { WindowFields } from '@/components/window-fields'
@@ -16,19 +15,19 @@ interface DrawdownPerformanceCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the value axis sits. */
   axisSide: AxisSide
-  /** The shared Charting Library that renders the chart. */
-  library: ChartingLibrary
+  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
+  libraries: readonly ChartingLibrary[]
 }
 
-export function DrawdownPerformanceCard({ history, axisSide, library }: DrawdownPerformanceCardProps) {
-  const { BarChart } = CHART_ADAPTERS[library]
+export function DrawdownPerformanceCard({ history, axisSide, libraries }: DrawdownPerformanceCardProps) {
   const { form, applied, range } = useWindowForm(history)
   const [count, setCount] = useState(DEFAULT_PERIOD_COUNT)
 
   const performance = useDrawdownPerformance(applied.benchmark, applied.strategy, range, count)
 
-  const bars = performance.data && toBarSeries(performance.data.series)
-  const [benchmark, strategy] = performance.data?.series ?? []
+  const data = performance.data
+  const bars = data && toBarSeries(data.series)
+  const [benchmark, strategy] = data?.series ?? []
 
   return (
     <ChartCard
@@ -41,13 +40,15 @@ export function DrawdownPerformanceCard({ history, axisSide, library }: Drawdown
         </div>
       }
       legend={benchmark && strategy && { benchmark: benchmark.name, strategy: strategy.name }}
+      libraries={libraries}
       isFetching={performance.isFetching}
       error={performance.error}
-      emptyReason={performance.data?.categories.length === 0 ? 'No Drawdown Periods in this Window.' : undefined}
-    >
-      {performance.data && bars && (
-        <BarChart categories={performance.data.categories} series={bars} axisSide={axisSide} />
-      )}
-    </ChartCard>
+      emptyReason={data?.categories.length === 0 ? 'No Drawdown Periods in this Window.' : undefined}
+      renderChart={
+        data &&
+        bars &&
+        (({ BarChart }) => <BarChart categories={data.categories} series={bars} axisSide={axisSide} />)
+      }
+    />
   )
 }

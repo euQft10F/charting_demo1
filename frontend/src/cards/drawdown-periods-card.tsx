@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
@@ -20,12 +19,11 @@ interface DrawdownPeriodsCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the Level axis sits. */
   axisSide: AxisSide
-  /** The shared Charting Library that renders the chart. */
-  library: ChartingLibrary
+  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
+  libraries: readonly ChartingLibrary[]
 }
 
-export function DrawdownPeriodsCard({ history, axisSide, library }: DrawdownPeriodsCardProps) {
-  const { DrawdownPeriodsChart } = CHART_ADAPTERS[library]
+export function DrawdownPeriodsCard({ history, axisSide, libraries }: DrawdownPeriodsCardProps) {
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available)
@@ -47,19 +45,22 @@ export function DrawdownPeriodsCard({ history, axisSide, library }: DrawdownPeri
         </div>
       }
       legend={sliced && { benchmark: sliced.benchmark.name, strategy: sliced.strategy.name }}
+      libraries={libraries}
       isFetching={levels.isFetching || periods.isFetching}
       error={levels.error ?? periods.error}
       emptyReason={sliced && sliced.dates.length < 2 ? 'Not enough data in this Window.' : undefined}
-    >
-      {sliced && shown && (
-        <DrawdownPeriodsChart
-          dates={sliced.dates}
-          benchmark={shown.benchmark}
-          strategy={shown.strategy}
-          periods={periods.isPlaceholderData ? NO_PERIODS : (periods.data?.periods ?? NO_PERIODS)}
-          axisSide={axisSide}
-        />
-      )}
-    </ChartCard>
+      renderChart={
+        sliced && shown &&
+        (({ DrawdownPeriodsChart }) => (
+          <DrawdownPeriodsChart
+            dates={sliced.dates}
+            benchmark={shown.benchmark}
+            strategy={shown.strategy}
+            periods={periods.isPlaceholderData ? NO_PERIODS : (periods.data?.periods ?? NO_PERIODS)}
+            axisSide={axisSide}
+          />
+        ))
+      }
+    />
   )
 }

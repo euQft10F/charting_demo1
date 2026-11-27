@@ -1,7 +1,9 @@
 import { Suspense, type ReactNode } from 'react'
 
+import { CHART_ADAPTERS, type ChartAdapter } from '@/charts/adapters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { CHARTING_LIBRARY_LABELS, type ChartingLibrary } from '@/lib/charting-library'
 import { CHART_THEME } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 
@@ -11,12 +13,17 @@ interface ChartCardProps {
   controls: ReactNode
   /** Benchmark/Strategy names for the legend. */
   legend?: { benchmark?: string; strategy?: string; extras?: { color: string; label: string }[] }
+  /**
+   * The Charting Libraries to render with. One fills the chart area; several sit side by side in a
+   * grid, each labelled, all drawing the same data.
+   */
+  libraries: readonly ChartingLibrary[]
   isFetching: boolean
   error: Error | null
   /** Set when the Window holds too little data for this chart. */
   emptyReason?: string
-  /** Rendered once there is data to show. */
-  children?: ReactNode
+  /** Draws the chart with one Charting Library's renderers; left out until there is data to show. */
+  renderChart?: (adapter: ChartAdapter) => ReactNode
 }
 
 export function ChartCard({
@@ -24,10 +31,11 @@ export function ChartCard({
   description,
   controls,
   legend,
+  libraries,
   isFetching,
   error,
   emptyReason,
-  children,
+  renderChart,
 }: ChartCardProps) {
   return (
     <Card>
@@ -48,19 +56,46 @@ export function ChartCard({
             {legend.extras?.map((e) => <LegendItem key={e.label} {...e} />)}
           </div>
         )}
-        <div className="relative h-80">
-          {error ? (
-            <Message tone="error">Could not load chart: {error.message}</Message>
-          ) : emptyReason ? (
-            <Message>{emptyReason}</Message>
-          ) : (
-            // A lazily loaded renderer suspends until its library arrives.
-            <Suspense fallback={<FillSpinner />}>{children}</Suspense>
-          )}
-          {isFetching && <FillSpinner />}
-        </div>
+        {error || emptyReason ? (
+          <ChartArea isFetching={isFetching}>
+            {error ? (
+              <Message tone="error">Could not load chart: {error.message}</Message>
+            ) : (
+              <Message>{emptyReason}</Message>
+            )}
+          </ChartArea>
+        ) : libraries.length === 1 ? (
+          <ChartArea isFetching={isFetching}>{renderChart?.(CHART_ADAPTERS[libraries[0]])}</ChartArea>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {libraries.map((library) => (
+              <section key={library} className="flex flex-col gap-2 rounded-md border p-3">
+                <h3 className="text-sm font-medium">{CHARTING_LIBRARY_LABELS[library]}</h3>
+                <ChartArea isFetching={isFetching}>{renderChart?.(CHART_ADAPTERS[library])}</ChartArea>
+              </section>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
+  )
+}
+
+interface ChartAreaProps {
+  /** Shows a spinner over the area while new data loads. */
+  isFetching: boolean
+  /** The chart, or a message in its place. */
+  children: ReactNode
+}
+
+/** Where one chart is drawn, at a fixed height. */
+function ChartArea({ isFetching, children }: ChartAreaProps) {
+  return (
+    <div className="relative h-80">
+      {/* A lazily loaded renderer suspends until its library arrives. */}
+      <Suspense fallback={<FillSpinner />}>{children}</Suspense>
+      {isFetching && <FillSpinner />}
+    </div>
   )
 }
 

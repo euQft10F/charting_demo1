@@ -1,4 +1,3 @@
-import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { WindowFields } from '@/components/window-fields'
 import { useWindowForm } from '@/lib/window-form'
@@ -13,12 +12,11 @@ interface DrawdownCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the Drawdown axis sits. */
   axisSide: AxisSide
-  /** The shared Charting Library that renders the chart. */
-  library: ChartingLibrary
+  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
+  libraries: readonly ChartingLibrary[]
 }
 
-export function DrawdownCard({ history, axisSide, library }: DrawdownCardProps) {
-  const { DrawdownChart } = CHART_ADAPTERS[library]
+export function DrawdownCard({ history, axisSide, libraries }: DrawdownCardProps) {
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available, { optionalIndices: true })
@@ -31,18 +29,21 @@ export function DrawdownCard({ history, axisSide, library }: DrawdownCardProps) 
       description="Drawdowns of the Benchmark and Strategy over the Window; set either to None to show just one."
       controls={<WindowFields control={form.control} indices={indices} optionalIndices />}
       legend={data && { benchmark: data.benchmark?.name, strategy: data.strategy?.name }}
+      libraries={libraries}
       isFetching={drawdowns.isFetching}
       error={drawdowns.error}
       emptyReason={data && data.dates.length < 2 ? 'Not enough data in this Window.' : undefined}
-    >
-      {data && (
-        <DrawdownChart
-          dates={data.dates}
-          benchmark={data.benchmark?.values}
-          strategy={data.strategy?.values}
-          axisSide={axisSide}
-        />
-      )}
-    </ChartCard>
+      renderChart={
+        data &&
+        (({ DrawdownChart }) => (
+          <DrawdownChart
+            dates={data.dates}
+            benchmark={data.benchmark?.values}
+            strategy={data.strategy?.values}
+            axisSide={axisSide}
+          />
+        ))
+      }
+    />
   )
 }

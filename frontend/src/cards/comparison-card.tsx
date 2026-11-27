@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { WindowFields } from '@/components/window-fields'
@@ -18,13 +17,12 @@ interface ComparisonCardProps {
   history: IndicesResponse
   /** The shared Axis Side: where the Level axis sits. */
   axisSide: AxisSide
-  /** The shared Charting Library that renders the chart. */
-  library: ChartingLibrary
+  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
+  libraries: readonly ChartingLibrary[]
   onAxisSideChange: (side: AxisSide) => void
 }
 
-export function ComparisonCard({ history, axisSide, library, onAxisSideChange }: ComparisonCardProps) {
-  const { ComparisonChart } = CHART_ADAPTERS[library]
+export function ComparisonCard({ history, axisSide, libraries, onAxisSideChange }: ComparisonCardProps) {
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available)
@@ -59,20 +57,23 @@ export function ComparisonCard({ history, axisSide, library, onAxisSideChange }:
           extras: [{ color: CHART_THEME.difference, label: 'Cumulative Difference (%)' }],
         }
       }
+      libraries={libraries}
       isFetching={levels.isFetching}
       error={levels.error}
       emptyReason={sliced && sliced.dates.length < 2 ? 'Not enough data in this Window.' : undefined}
-    >
-      {sliced && shown && difference && (
-        <ComparisonChart
-          dates={sliced.dates}
-          benchmark={shown.benchmark}
-          strategy={shown.strategy}
-          difference={difference}
-          logScale={logScale}
-          axisSide={axisSide}
-        />
-      )}
-    </ChartCard>
+      renderChart={
+        sliced && shown && difference &&
+        (({ ComparisonChart }) => (
+          <ComparisonChart
+            dates={sliced.dates}
+            benchmark={shown.benchmark}
+            strategy={shown.strategy}
+            difference={difference}
+            logScale={logScale}
+            axisSide={axisSide}
+          />
+        ))
+      }
+    />
   )
 }
