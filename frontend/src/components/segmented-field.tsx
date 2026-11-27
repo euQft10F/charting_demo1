@@ -1,6 +1,7 @@
 import { Field, FieldLabel } from '@/components/ui/field'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { cn } from '@/lib/utils'
+
+const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
 interface SegmentedFieldProps<T extends string> {
   label: string
@@ -28,12 +29,9 @@ export function SegmentedField<T extends string>({ label, options, value, onChan
           <ToggleGroupItem
             key={option}
             value={option}
-            className={cn(
-              !labels && 'capitalize',
-              'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
-            )}
+            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
           >
-            {labels?.[option] ?? option}
+            {labels?.[option] ?? capitalise(option)}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

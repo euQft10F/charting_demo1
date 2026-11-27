@@ -1,11 +1,9 @@
-import type { Data, Layout, LayoutAxis } from 'plotly.js'
+import type { Data, Layout, LayoutAxis, PlotData } from 'plotly.js'
 
 import { CHART_THEME } from '@/lib/colors'
 
-/** The value axis style shared by every Plotly.js renderer: no axis line or ticks, grid lines only. */
+/** The value axis style shared by every Plotly.js renderer: grid lines only (no axis line or ticks, by default). */
 export const VALUE_AXIS: Partial<LayoutAxis> = {
-  showline: false,
-  ticks: '',
   gridcolor: CHART_THEME.grid,
   zeroline: false,
   automargin: true,
@@ -22,8 +20,6 @@ export const DATE_AXIS: Partial<LayoutAxis> = {
   type: 'date',
   rangebreaks: [{ bounds: ['sat', 'mon'] }],
   showgrid: false,
-  showline: false,
-  ticks: '',
   automargin: true,
   hoverformat: '%b %-d, %Y',
 }
@@ -38,12 +34,12 @@ export function baseLayout(uirevision: string): Partial<Layout> {
     margin: { t: 8, r: 8, b: 8, l: 8, pad: 4 },
     paper_bgcolor: CHART_THEME.background,
     plot_bgcolor: CHART_THEME.background,
+    // Plotly draws its own text, so it needs the page font (Tailwind's --font-sans) spelled out.
     font: { family: 'Geist Variable, sans-serif', size: 12, color: CHART_THEME.text },
     showlegend: false,
     // One tooltip listing every series at the hovered x, like the other libraries' tooltips.
     hovermode: 'x unified',
     hoverlabel: { bgcolor: CHART_THEME.background, bordercolor: CHART_THEME.grid, font: { size: 13 } },
-    dragmode: 'zoom',
     uirevision,
   }
 }
@@ -51,19 +47,27 @@ export function baseLayout(uirevision: string): Partial<Layout> {
 /** The Window a date chart shows, as a `uirevision`. */
 export const windowKey = (dates: string[]) => `${dates[0]}/${dates.at(-1)}`
 
-export const LEVEL_HOVER = '%{y:,.2f}'
 export const PERCENT_HOVER = '%{y:.2f}%'
 
-/** An Index's Levels as a line, on the given value axis. */
-export function levelTrace(name: string, dates: string[], levels: number[], color: string, yaxis = 'y'): Data {
+/**
+ * One series over the dates as a 2px line, read as Levels in the tooltip; `overrides` turn it into a
+ * filled area, move it to another axis or change its tooltip.
+ */
+export function lineTrace(
+  name: string,
+  dates: string[],
+  values: number[],
+  color: string,
+  overrides: Partial<PlotData> = {},
+): Data {
   return {
     type: 'scatter',
     mode: 'lines',
     name,
     x: dates,
-    y: levels,
-    yaxis,
+    y: values,
     line: { color, width: 2 },
-    hovertemplate: LEVEL_HOVER,
+    hovertemplate: '%{y:,.2f}',
+    ...overrides,
   }
 }

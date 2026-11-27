@@ -2,8 +2,8 @@ import type { Config, Data, Layout } from 'plotly.js'
 import Plotly from 'plotly.js-basic-dist-min'
 import { useEffect, useRef } from 'react'
 
-/** No mode bar or logo: drag zooms the x axis and a double click resets it. */
-const CONFIG: Partial<Config> = { displayModeBar: false, displaylogo: false }
+/** No mode bar: drag zooms the x axis and a double click resets it. */
+const CONFIG: Partial<Config> = { displayModeBar: false }
 
 interface PlotlyChartProps {
   data: Data[]
@@ -25,7 +25,12 @@ export function PlotlyChart({ data, layout }: PlotlyChartProps) {
   // `config.responsive` only follows window resizes; the card can change size on its own.
   useEffect(() => {
     const element = container.current!
-    const observer = new ResizeObserver(() => void Plotly.Plots.resize(element))
+    // An observer reports once on `observe`, when the first draw already fits; resizing then would redraw for nothing.
+    let observed = false
+    const observer = new ResizeObserver(() => {
+      if (observed) void Plotly.Plots.resize(element)
+      observed = true
+    })
     observer.observe(element)
     return () => {
       observer.disconnect()

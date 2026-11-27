@@ -1,15 +1,15 @@
 import type { Data, Layout } from 'plotly.js'
 
 import { PlotlyChart } from '@/charts/plotly/plotly-chart'
-import { baseLayout, DATE_AXIS, levelTrace, VALUE_AXIS, windowKey } from '@/charts/plotly/shared'
+import { baseLayout, DATE_AXIS, lineTrace, VALUE_AXIS, windowKey } from '@/charts/plotly/shared'
 import type { DrawdownPeriodsChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 
 /** Plotly.js renderer for the Drawdown Periods Chart: both Levels with shaded Periods. */
 export function DrawdownPeriodsChart({ dates, benchmark, strategy, periods, axisSide }: DrawdownPeriodsChartProps) {
   const data: Data[] = [
-    levelTrace('Benchmark', dates, benchmark, CHART_THEME.benchmark),
-    levelTrace('Strategy', dates, strategy, CHART_THEME.strategy),
+    lineTrace('Benchmark', dates, benchmark, CHART_THEME.benchmark),
+    lineTrace('Strategy', dates, strategy, CHART_THEME.strategy),
   ]
   // Shapes count towards the x autorange, so a Period outside this Window (mid-refresh) would
   // stretch the date axis; leave it out. ISO dates compare correctly as strings.

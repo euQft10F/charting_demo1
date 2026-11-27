@@ -1,7 +1,7 @@
 import type { Data, Layout } from 'plotly.js'
 
 import { PlotlyChart } from '@/charts/plotly/plotly-chart'
-import { baseLayout, DATE_AXIS, levelTrace, PERCENT_HOVER, VALUE_AXIS, windowKey } from '@/charts/plotly/shared'
+import { baseLayout, DATE_AXIS, lineTrace, PERCENT_HOVER, VALUE_AXIS, windowKey } from '@/charts/plotly/shared'
 import type { ComparisonChartProps } from '@/charts/types'
 import { oppositeSide } from '@/lib/axis-side'
 import { CHART_THEME } from '@/lib/colors'
@@ -16,20 +16,14 @@ import { CHART_THEME } from '@/lib/colors'
 export function ComparisonChart({ dates, benchmark, strategy, difference, logScale, axisSide }: ComparisonChartProps) {
   // Listed in tooltip order: the unified tooltip follows the trace order.
   const data: Data[] = [
-    levelTrace('Benchmark', dates, benchmark, CHART_THEME.benchmark, 'y2'),
-    levelTrace('Strategy', dates, strategy, CHART_THEME.strategy, 'y2'),
-    {
-      type: 'scatter',
-      mode: 'lines',
-      name: 'Cumulative Difference',
-      x: dates,
-      y: difference,
-      yaxis: 'y',
+    lineTrace('Benchmark', dates, benchmark, CHART_THEME.benchmark, { yaxis: 'y2' }),
+    lineTrace('Strategy', dates, strategy, CHART_THEME.strategy, { yaxis: 'y2' }),
+    lineTrace('Cumulative Difference', dates, difference, CHART_THEME.difference, {
       fill: 'tozeroy',
       fillcolor: CHART_THEME.differenceFill,
       line: { color: CHART_THEME.difference, width: 1 },
       hovertemplate: PERCENT_HOVER,
-    },
+    }),
   ]
 
   const layout: Partial<Layout> = {

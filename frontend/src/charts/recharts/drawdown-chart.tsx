@@ -1,5 +1,6 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
+import { FLAT_DRAWDOWN_RANGE, hasDrawdown } from '@/charts/drawdown-axis'
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
 import {
   AXIS_STYLE,
@@ -15,24 +16,21 @@ import { CHART_THEME } from '@/lib/colors'
 
 /**
  * Drawdowns are never above 0, so the axis tops out at 0. 'auto' keeps Recharts' round ticks (a
- * function bound would turn them off). A Window with no Drawdown at all is flat at 0; give it room
- * below so 0 stays the top.
+ * function bound would turn them off). A flat Window takes FLAT_DRAWDOWN_RANGE instead.
  */
 const DRAWDOWN_DOMAIN: [number | 'auto', number] = ['auto', 0]
-const FLAT_DOMAIN: [number, number] = [-1, 0]
-
 /** Recharts renderer for the Drawdown Chart: both Drawdowns, overlaid, hanging from 0. */
 export function DrawdownChart({ dates, benchmark, strategy, axisSide }: DrawdownChartProps) {
   const rows = toRows(dates, { benchmark, strategy })
   const formatDate = dateTickFormatter(dates)
-  const flat = ![benchmark, strategy].some((values) => values?.some((v) => v < 0))
+  const flat = !hasDrawdown(benchmark, strategy)
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={rows} margin={CHART_MARGIN}>
         <CartesianGrid {...GRID_STYLE} />
         <XAxis dataKey="date" {...AXIS_STYLE} tickFormatter={formatDate} minTickGap={48} />
-        <YAxis orientation={axisSide} {...AXIS_STYLE} domain={flat ? FLAT_DOMAIN : DRAWDOWN_DOMAIN} tickFormatter={formatPercent} />
+        <YAxis orientation={axisSide} {...AXIS_STYLE} domain={flat ? FLAT_DRAWDOWN_RANGE : DRAWDOWN_DOMAIN} tickFormatter={formatPercent} />
         <Tooltip
           isAnimationActive={false}
           content={(props) => (

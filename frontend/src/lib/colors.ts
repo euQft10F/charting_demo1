@@ -13,4 +13,6 @@ export const CHART_THEME = {
   background: '#ffffff',
   text: '#444444',
   grid: '#eeeeee',
+  /** The bar charts' 0 line: the text colour, faded so it reads as an axis rather than data. */
+  zeroLine: 'rgba(68, 68, 68, 0.4)',
 }

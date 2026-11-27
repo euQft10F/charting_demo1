@@ -3,6 +3,7 @@ import type { Data, Layout } from 'plotly.js'
 import { PlotlyChart } from '@/charts/plotly/plotly-chart'
 import { baseLayout, PERCENT_HOVER, VALUE_AXIS } from '@/charts/plotly/shared'
 import type { BarChartProps } from '@/charts/types'
+import { CHART_THEME } from '@/lib/colors'
 
 /**
  * Plotly.js renderer for category bar charts: grouped bars with the categories as axis labels.
@@ -21,20 +22,11 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
   const layout: Partial<Layout> = {
     // Nothing to zoom along a handful of categories; the categories themselves are the revision.
     ...baseLayout(categories.join('|')),
-    // 30% of each category is gap, matching the Lightweight Charts groups' 70% fill.
     barmode: 'group',
+    // 30% of each category is gap, matching the Lightweight Charts groups' 70% fill.
     bargap: 0.3,
-    bargroupgap: 0,
-    xaxis: { type: 'category', showgrid: false, showline: false, ticks: '', automargin: true, fixedrange: true },
-    yaxis: {
-      ...VALUE_AXIS,
-      side: axisSide,
-      ticksuffix: '%',
-      zeroline: true,
-      // The text colour at 40%, as in the Recharts bar chart's 0 line.
-      zerolinecolor: 'rgba(68, 68, 68, 0.4)',
-      zerolinewidth: 1,
-    },
+    xaxis: { type: 'category', showgrid: false, automargin: true, fixedrange: true },
+    yaxis: { ...VALUE_AXIS, side: axisSide, ticksuffix: '%', zeroline: true, zerolinecolor: CHART_THEME.zeroLine },
   }
 
   return <PlotlyChart data={data} layout={layout} />
