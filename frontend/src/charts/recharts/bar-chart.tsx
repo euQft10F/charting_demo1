@@ -9,8 +9,9 @@ import {
   YAxis,
 } from 'recharts'
 
+import { formatPercent } from '@/charts/format'
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
-import { AXIS_STYLE, CHART_MARGIN, formatPercent, GRID_STYLE, toRows } from '@/charts/recharts/shared'
+import { AXIS_STYLE, CHART_MARGIN, GRID_STYLE, toRows } from '@/charts/recharts/shared'
 import type { BarChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 

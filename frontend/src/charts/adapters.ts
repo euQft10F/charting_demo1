@@ -1,5 +1,9 @@
 import type { ComponentType } from 'react'
 
+import { BarChart as EchartsBarChart } from '@/charts/echarts/bar-chart'
+import { ComparisonChart as EchartsComparisonChart } from '@/charts/echarts/comparison-chart'
+import { DrawdownChart as EchartsDrawdownChart } from '@/charts/echarts/drawdown-chart'
+import { DrawdownPeriodsChart as EchartsDrawdownPeriodsChart } from '@/charts/echarts/drawdown-periods-chart'
 import { BarChart as LwcBarChart } from '@/charts/lwc/bar-chart'
 import { ComparisonChart as LwcComparisonChart } from '@/charts/lwc/comparison-chart'
 import { DrawdownChart as LwcDrawdownChart } from '@/charts/lwc/drawdown-chart'
@@ -37,5 +41,11 @@ export const CHART_ADAPTERS: Record<ChartingLibrary, ChartAdapter> = {
     DrawdownChart: RechartsDrawdownChart,
     DrawdownPeriodsChart: RechartsDrawdownPeriodsChart,
     BarChart: RechartsBarChart,
+  },
+  echarts: {
+    ComparisonChart: EchartsComparisonChart,
+    DrawdownChart: EchartsDrawdownChart,
+    DrawdownPeriodsChart: EchartsDrawdownPeriodsChart,
+    BarChart: EchartsBarChart,
   },
 }
