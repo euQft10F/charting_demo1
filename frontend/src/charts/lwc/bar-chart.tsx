@@ -108,18 +108,9 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
   const container = useRef<HTMLDivElement>(null)
   const chartRef = useRef<ReturnType<typeof createChart>>(null)
   const barsRef = useRef<ISeriesApi<'Custom', Time, GroupedBarData | CustomSeriesWhitespaceData<Time>, GroupedBarOptions>>(null)
-  // The time axis reads the latest categories without recreating the chart.
-  const labels = useRef(categories)
   useEffect(() => {
-    labels.current = categories
-  }, [categories])
-
-  useEffect(() => {
-    const label = (time: Time) => labels.current[indexOf(time)] ?? ''
     const chart = createChart(container.current!, {
       ...themedChartOptions(),
-      timeScale: { borderVisible: false, tickMarkFormatter: label },
-      localization: { timeFormatter: label },
       handleScroll: false,
       handleScale: false,
     })
@@ -153,10 +144,17 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
     barsRef.current?.setData(
       categories.map((_, i) => ({ time: timeOf(i), values: series.map((s) => s.values[i]) })),
     )
-    // The default label width estimate is 8 characters; long categories need room or get overlapped.
-    chartRef.current
-      ?.timeScale()
-      .applyOptions({ tickMarkMaxCharacterLength: Math.max(8, ...categories.map((c) => c.length)) })
+    // The time axis labels each stand-in time with its category; set with the data so it always
+    // reads these categories. The default label width estimate is 8 characters; long categories
+    // need room or get overlapped.
+    const label = (time: Time) => categories[indexOf(time)] ?? ''
+    chartRef.current?.applyOptions({
+      localization: { timeFormatter: label },
+      timeScale: {
+        tickMarkFormatter: label,
+        tickMarkMaxCharacterLength: Math.max(8, ...categories.map((c) => c.length)),
+      },
+    })
     chartRef.current?.timeScale().fitContent()
   }, [categories, series])
 

@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   Bar,
   CartesianGrid,
@@ -23,15 +22,11 @@ const keyOf = (index: number) => `s${index}`
  * Values are percentages. Recharts has a native category axis, so no stand-in times are needed.
  */
 export function BarChart({ categories, series, axisSide }: BarChartProps) {
-  const rows = useMemo(
-    () =>
-      categories.map((category, i) => {
-        const row: Record<string, string | number> = { category }
-        series.forEach((s, j) => (row[keyOf(j)] = s.values[i]))
-        return row
-      }),
-    [categories, series],
-  )
+  const rows = categories.map((category, i) => {
+    const row: Record<string, string | number> = { category }
+    series.forEach((s, j) => (row[keyOf(j)] = s.values[i]))
+    return row
+  })
 
   return (
     <ResponsiveContainer width="100%" height="100%">

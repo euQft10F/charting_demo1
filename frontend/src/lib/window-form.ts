@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -68,15 +68,13 @@ export function useAppliedValues<S extends z.ZodType>(schema: S, values: unknown
  * With `optionalIndices`, either Index may be left empty, but not both.
  */
 export function useWindowForm(available: DateRange, { optionalIndices = false } = {}) {
-  const schema = useMemo(() => {
-    const shape = optionalIndices ? { ...windowShape, benchmark: z.string(), strategy: z.string() } : windowShape
-    return z.object(shape).superRefine((v, ctx) => {
-      refineWindow(available)(v, ctx)
-      if (optionalIndices && !v.benchmark && !v.strategy) {
-        ctx.addIssue({ code: 'custom', path: ['strategy'], message: 'Choose a Benchmark or a Strategy' })
-      }
-    })
-  }, [available, optionalIndices])
+  const shape = optionalIndices ? { ...windowShape, benchmark: z.string(), strategy: z.string() } : windowShape
+  const schema = z.object(shape).superRefine((v, ctx) => {
+    refineWindow(available)(v, ctx)
+    if (optionalIndices && !v.benchmark && !v.strategy) {
+      ctx.addIssue({ code: 'custom', path: ['strategy'], message: 'Choose a Benchmark or a Strategy' })
+    }
+  })
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultWindowValues(available),
@@ -84,6 +82,6 @@ export function useWindowForm(available: DateRange, { optionalIndices = false } 
   })
   const values = useWatch({ control: form.control })
   const applied = useAppliedValues(schema, values)
-  const range = useMemo(() => resolveWindow(toWindow(applied), available), [applied, available])
+  const range = resolveWindow(toWindow(applied), available)
   return { form, applied, range }
 }

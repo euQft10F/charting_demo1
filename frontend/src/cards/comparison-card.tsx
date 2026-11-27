@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
@@ -34,10 +34,7 @@ export function ComparisonCard({ history, axisSide, library, onAxisSideChange }:
   const { levels, sliced, shown } = useWindowLevels(applied.benchmark, applied.strategy, range, rebased)
 
   // Cumulative Difference ignores Rebase, so toggling Rebase leaves it untouched.
-  const difference = useMemo(
-    () => sliced && cumulativeDifference(sliced.benchmark.values, sliced.strategy.values),
-    [sliced],
-  )
+  const difference = sliced && cumulativeDifference(sliced.benchmark.values, sliced.strategy.values)
 
   return (
     <ChartCard

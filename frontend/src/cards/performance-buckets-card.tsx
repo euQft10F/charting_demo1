@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
@@ -32,7 +32,7 @@ export function PerformanceBucketsCard({ history, axisSide, library }: Performan
     frequency,
   })
 
-  const bars = useMemo(() => buckets.data && toBarSeries(buckets.data.series), [buckets.data])
+  const bars = buckets.data && toBarSeries(buckets.data.series)
   const [benchmark, strategy] = buckets.data?.series ?? []
 
   return (

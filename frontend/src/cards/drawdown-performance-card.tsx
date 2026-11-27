@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { CHART_ADAPTERS } from '@/charts/adapters'
 import { ChartCard } from '@/components/chart-card'
@@ -27,7 +27,7 @@ export function DrawdownPerformanceCard({ history, axisSide, library }: Drawdown
 
   const performance = useDrawdownPerformance(applied.benchmark, applied.strategy, range, count)
 
-  const bars = useMemo(() => performance.data && toBarSeries(performance.data.series), [performance.data])
+  const bars = performance.data && toBarSeries(performance.data.series)
   const [benchmark, strategy] = performance.data?.series ?? []
 
   return (

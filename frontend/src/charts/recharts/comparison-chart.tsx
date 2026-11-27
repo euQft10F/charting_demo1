@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
@@ -20,8 +19,8 @@ const differenceLast = (item: { dataKey?: unknown }) => (item.dataKey === 'diffe
 
 /** Recharts renderer for the Comparison Chart: Levels plus the Cumulative Difference on the other axis. */
 export function ComparisonChart({ dates, benchmark, strategy, difference, logScale, axisSide }: ComparisonChartProps) {
-  const rows = useMemo(() => toRows(dates, { benchmark, strategy, difference }), [dates, benchmark, strategy, difference])
-  const formatDate = useMemo(() => dateTickFormatter(dates), [dates])
+  const rows = toRows(dates, { benchmark, strategy, difference })
+  const formatDate = dateTickFormatter(dates)
 
   return (
     <ResponsiveContainer width="100%" height="100%">

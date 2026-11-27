@@ -1,5 +1,4 @@
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 
 import {
   fetchDrawdownPerformance,
@@ -61,12 +60,11 @@ export function useLevels(benchmark: string, strategy: string) {
  */
 export function useWindowLevels(benchmark: string, strategy: string, range: DateRange, rebased: boolean) {
   const levels = useLevels(benchmark, strategy)
-  const sliced = useMemo(() => levels.data && sliceLevels(levels.data, range), [levels.data, range])
-  const shown = useMemo(() => {
-    if (!sliced) return undefined
-    const level = rebased ? rebase : (values: number[]) => values
-    return { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
-  }, [sliced, rebased])
+  // The React Compiler memoises both on their inputs, so `sliced` (and its `dates`) keeps its
+  // identity across Rebase toggles and the charts don't refit.
+  const sliced = levels.data && sliceLevels(levels.data, range)
+  const level = rebased ? rebase : (values: number[]) => values
+  const shown = sliced && { benchmark: level(sliced.benchmark.values), strategy: level(sliced.strategy.values) }
   return { levels, sliced, shown }
 }
 

@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
@@ -16,11 +15,11 @@ import { CHART_THEME } from '@/lib/colors'
 
 /** Recharts renderer for the Drawdown Periods Chart: both Levels with shaded Periods. */
 export function DrawdownPeriodsChart({ dates, benchmark, strategy, periods, axisSide }: DrawdownPeriodsChartProps) {
-  const rows = useMemo(() => toRows(dates, { benchmark, strategy }), [dates, benchmark, strategy])
-  const formatDate = useMemo(() => dateTickFormatter(dates), [dates])
+  const rows = toRows(dates, { benchmark, strategy })
+  const formatDate = dateTickFormatter(dates)
   // The x axis is categorical, so a band can only start and end on a date in the data; a Period
   // whose dates aren't in this Window (mid-refresh) is left out rather than drawn in the wrong place.
-  const onChart = useMemo(() => new Set(dates), [dates])
+  const onChart = new Set(dates)
   const shown = periods.filter((p) => onChart.has(p.start) && onChart.has(p.end))
 
   return (

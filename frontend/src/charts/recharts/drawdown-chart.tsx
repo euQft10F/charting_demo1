@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
@@ -24,12 +23,9 @@ const FLAT_DOMAIN: [number, number] = [-1, 0]
 
 /** Recharts renderer for the Drawdown Chart: both Drawdowns, overlaid, hanging from 0. */
 export function DrawdownChart({ dates, benchmark, strategy, axisSide }: DrawdownChartProps) {
-  const rows = useMemo(() => toRows(dates, { benchmark, strategy }), [dates, benchmark, strategy])
-  const formatDate = useMemo(() => dateTickFormatter(dates), [dates])
-  const flat = useMemo(
-    () => ![benchmark, strategy].some((values) => values?.some((v) => v < 0)),
-    [benchmark, strategy],
-  )
+  const rows = toRows(dates, { benchmark, strategy })
+  const formatDate = dateTickFormatter(dates)
+  const flat = ![benchmark, strategy].some((values) => values?.some((v) => v < 0))
 
   return (
     <ResponsiveContainer width="100%" height="100%">
