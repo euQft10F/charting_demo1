@@ -1,5 +1,6 @@
 import type { Data, Layout, LayoutAxis, PlotData } from 'plotly.js'
 
+import { formatLevel } from '@/charts/format'
 import { CHART_THEME } from '@/lib/colors'
 
 /** The value axis style shared by every Plotly.js renderer: grid lines only (no axis line or ticks, by default). */
@@ -21,6 +22,7 @@ export const DATE_AXIS: Partial<LayoutAxis> = {
   rangebreaks: [{ bounds: ['sat', 'mon'] }],
   showgrid: false,
   automargin: true,
+  // The unified tooltip's heading; Plotly can't take formatFullDate's text there, so this mirrors it in English.
   hoverformat: '%b %-d, %Y',
 }
 
@@ -47,17 +49,25 @@ export function baseLayout(uirevision: string): Partial<Layout> {
 /** The Window a date chart shows, as a `uirevision`. */
 export const windowKey = (dates: string[]) => `${dates[0]}/${dates.at(-1)}`
 
-export const PERCENT_HOVER = '%{y:.2f}%'
+/**
+ * Tooltip text from the shared formatters in `format.ts`, so values read as in the other libraries.
+ * Plotly's own hover formats are d3 formats with fixed decimals in English.
+ */
+export const hoverValues = (values: number[], format: (value: number) => string): Partial<PlotData> => ({
+  customdata: values.map(format),
+  hovertemplate: '%{customdata}',
+})
 
 /**
- * One series over the dates as a 2px line, read as Levels in the tooltip; `overrides` turn it into a
- * filled area, move it to another axis or change its tooltip.
+ * One series over the dates as a 2px line, its tooltip value written by `format` (Levels by default);
+ * `overrides` turn it into a filled area or move it to another axis.
  */
 export function lineTrace(
   name: string,
   dates: string[],
   values: number[],
   color: string,
+  format: (value: number) => string = formatLevel,
   overrides: Partial<PlotData> = {},
 ): Data {
   return {
@@ -67,7 +77,7 @@ export function lineTrace(
     x: dates,
     y: values,
     line: { color, width: 2 },
-    hovertemplate: '%{y:,.2f}',
+    ...hoverValues(values, format),
     ...overrides,
   }
 }

@@ -18,6 +18,7 @@ import { CHART_THEME } from '@/lib/colors'
  * function bound would turn them off). A flat Window takes FLAT_DRAWDOWN_RANGE instead.
  */
 const DRAWDOWN_DOMAIN: [number | 'auto', number] = ['auto', 0]
+
 /** Recharts renderer for the Drawdown Chart: both Drawdowns, overlaid, hanging from 0. */
 export function DrawdownChart({ dates, benchmark, strategy, axisSide }: DrawdownChartProps) {
   const rows = toRows(dates, { benchmark, strategy })

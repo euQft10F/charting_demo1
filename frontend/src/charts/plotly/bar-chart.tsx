@@ -1,7 +1,8 @@
 import type { Data, Layout } from 'plotly.js'
 
+import { formatBarValue } from '@/charts/format'
 import { PlotlyChart } from '@/charts/plotly/plotly-chart'
-import { baseLayout, PERCENT_HOVER, VALUE_AXIS } from '@/charts/plotly/shared'
+import { baseLayout, hoverValues, VALUE_AXIS } from '@/charts/plotly/shared'
 import type { BarChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 
@@ -16,7 +17,7 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
     x: categories,
     y: s.values,
     marker: { color: s.color },
-    hovertemplate: PERCENT_HOVER,
+    ...hoverValues(s.values, formatBarValue),
   }))
 
   const layout: Partial<Layout> = {
