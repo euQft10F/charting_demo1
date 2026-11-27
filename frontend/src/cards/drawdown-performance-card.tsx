@@ -1,25 +1,14 @@
 import { useState } from 'react'
 
+import type { CardProps } from '@/cards/card-props'
 import { ChartCard } from '@/components/chart-card'
 import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
 import { WindowFields } from '@/components/window-fields'
-import type { IndicesResponse } from '@/lib/api'
-import type { AxisSide } from '@/lib/axis-side'
-import type { ChartingLibrary } from '@/lib/charting-library'
 import { toBarSeries } from '@/lib/bars'
 import { useDrawdownPerformance } from '@/lib/queries'
 import { useWindowForm } from '@/lib/window-form'
 
-interface DrawdownPerformanceCardProps {
-  /** The Indices on offer and the dates their history covers. */
-  history: IndicesResponse
-  /** The shared Axis Side: where the value axis sits. */
-  axisSide: AxisSide
-  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
-  libraries: readonly ChartingLibrary[]
-}
-
-export function DrawdownPerformanceCard({ history, axisSide, libraries }: DrawdownPerformanceCardProps) {
+export function DrawdownPerformanceCard({ history, axisSide, libraries }: CardProps) {
   const { form, applied, range } = useWindowForm(history)
   const [count, setCount] = useState(DEFAULT_PERIOD_COUNT)
 

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
 
+import type { CardProps } from '@/cards/card-props'
 import { ComparisonCard } from '@/cards/comparison-card'
 import { DrawdownCard } from '@/cards/drawdown-card'
 import { DrawdownPerformanceCard } from '@/cards/drawdown-performance-card'
@@ -14,7 +15,6 @@ import {
   DEFAULT_CHARTING_LIBRARY,
   type ChartingLibrary,
 } from '@/lib/charting-library'
-import type { IndicesResponse } from '@/lib/api'
 import { useIndices } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 
@@ -32,6 +32,13 @@ const CHART_LABELS: Record<Chart, string> = {
   'performance-buckets': 'Performance Buckets',
   'drawdown-performance': 'Drawdown Performance',
 }
+const CHART_CARDS: Record<Chart, ComponentType<CardProps>> = {
+  comparison: ComparisonCard,
+  drawdown: DrawdownCard,
+  'drawdown-periods': DrawdownPeriodsCard,
+  'performance-buckets': PerformanceBucketsCard,
+  'drawdown-performance': DrawdownPerformanceCard,
+}
 
 export default function App() {
   const indices = useIndices()
@@ -44,6 +51,7 @@ export default function App() {
   // The chart shown in the compare view. A card keeps its form while it stays on screen; one that
   // leaves and comes back starts afresh, though data fetched with the same parameters is cached.
   const [compared, setCompared] = useState<Chart>('comparison')
+  const isDashboard = view === 'dashboard'
 
   return (
     <div className="min-h-svh">
@@ -56,7 +64,7 @@ export default function App() {
         </p>
         <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
           <SegmentedField label="View" options={VIEWS} labels={VIEW_LABELS} value={view} onChange={setView} />
-          {view === 'dashboard' ? (
+          {isDashboard ? (
             <SegmentedField
               label="Charting Library"
               options={CHARTING_LIBRARIES}
@@ -69,7 +77,7 @@ export default function App() {
           )}
         </div>
       </header>
-      <main className={cn('mx-auto flex flex-col gap-6 p-6', view === 'dashboard' ? 'max-w-6xl' : 'max-w-[100rem]')}>
+      <main className={cn('mx-auto flex flex-col gap-6 p-6', isDashboard ? 'max-w-6xl' : 'max-w-[100rem]')}>
         {indices.isPending ? (
           <div className="flex justify-center p-12">
             <Spinner className="size-8 text-primary" />
@@ -77,49 +85,20 @@ export default function App() {
         ) : indices.isError ? (
           <p className="text-destructive">Could not reach the backend: {indices.error.message}</p>
         ) : (
-          <>
-            {(view === 'dashboard' ? CHARTS : [compared]).map((chart) => (
-              <ChartCardFor
+          (isDashboard ? CHARTS : [compared]).map((chart) => {
+            const Card = CHART_CARDS[chart]
+            return (
+              <Card
                 key={chart}
-                chart={chart}
                 history={indices.data}
                 axisSide={axisSide}
-                libraries={view === 'dashboard' ? [library] : CHARTING_LIBRARIES}
+                libraries={isDashboard ? [library] : CHARTING_LIBRARIES}
                 onAxisSideChange={setAxisSide}
               />
-            ))}
-          </>
+            )
+          })
         )}
       </main>
     </div>
   )
-}
-
-interface ChartCardForProps {
-  /** Which chart's card to show. */
-  chart: Chart
-  /** The Indices on offer and the dates their history covers. */
-  history: IndicesResponse
-  /** The shared Axis Side. */
-  axisSide: AxisSide
-  /** The Charting Libraries that render the chart. */
-  libraries: readonly ChartingLibrary[]
-  /** Changes the shared Axis Side; only the Comparison Chart card offers the control. */
-  onAxisSideChange: (side: AxisSide) => void
-}
-
-/** The card for one chart, rendered by the given Charting Libraries. */
-function ChartCardFor({ chart, onAxisSideChange, ...props }: ChartCardForProps) {
-  switch (chart) {
-    case 'comparison':
-      return <ComparisonCard {...props} onAxisSideChange={onAxisSideChange} />
-    case 'drawdown':
-      return <DrawdownCard {...props} />
-    case 'drawdown-periods':
-      return <DrawdownPeriodsCard {...props} />
-    case 'performance-buckets':
-      return <PerformanceBucketsCard {...props} />
-    case 'drawdown-performance':
-      return <DrawdownPerformanceCard {...props} />
-  }
 }

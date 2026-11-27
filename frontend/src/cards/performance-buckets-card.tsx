@@ -1,25 +1,15 @@
 import { useState } from 'react'
 
+import type { CardProps } from '@/cards/card-props'
 import { ChartCard } from '@/components/chart-card'
 import { SegmentedField } from '@/components/segmented-field'
 import { WindowFields } from '@/components/window-fields'
-import { RETURN_FREQUENCIES, type IndicesResponse, type ReturnFrequency } from '@/lib/api'
-import type { AxisSide } from '@/lib/axis-side'
-import type { ChartingLibrary } from '@/lib/charting-library'
+import { RETURN_FREQUENCIES, type ReturnFrequency } from '@/lib/api'
 import { toBarSeries } from '@/lib/bars'
 import { usePerformanceBuckets } from '@/lib/queries'
 import { useWindowForm } from '@/lib/window-form'
 
-interface PerformanceBucketsCardProps {
-  /** The Indices on offer and the dates their history covers. */
-  history: IndicesResponse
-  /** The shared Axis Side: where the value axis sits. */
-  axisSide: AxisSide
-  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
-  libraries: readonly ChartingLibrary[]
-}
-
-export function PerformanceBucketsCard({ history, axisSide, libraries }: PerformanceBucketsCardProps) {
+export function PerformanceBucketsCard({ history, axisSide, libraries }: CardProps) {
   const { form, applied, range } = useWindowForm(history)
   const [frequency, setFrequency] = useState<ReturnFrequency>('daily')
 

@@ -37,6 +37,13 @@ export function ChartCard({
   emptyReason,
   renderChart,
 }: ChartCardProps) {
+  const message = error ? (
+    <Message tone="error">Could not load chart: {error.message}</Message>
+  ) : (
+    emptyReason && <Message>{emptyReason}</Message>
+  )
+  const compare = libraries.length > 1
+
   return (
     <Card>
       <CardHeader>
@@ -56,21 +63,15 @@ export function ChartCard({
             {legend.extras?.map((e) => <LegendItem key={e.label} {...e} />)}
           </div>
         )}
-        {error || emptyReason ? (
-          <ChartArea isFetching={isFetching}>
-            {error ? (
-              <Message tone="error">Could not load chart: {error.message}</Message>
-            ) : (
-              <Message>{emptyReason}</Message>
-            )}
-          </ChartArea>
-        ) : libraries.length === 1 ? (
-          <ChartArea isFetching={isFetching}>{renderChart?.(CHART_ADAPTERS[libraries[0]])}</ChartArea>
+        {message ? (
+          <ChartArea isFetching={isFetching}>{message}</ChartArea>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          // One keyed panel per library, with or without a label, so a chart already drawn survives
+          // a switch between one library and several.
+          <div className={cn(compare && 'grid gap-4 lg:grid-cols-2')}>
             {libraries.map((library) => (
-              <section key={library} className="flex flex-col gap-2 rounded-md border p-3">
-                <h3 className="text-sm font-medium">{CHARTING_LIBRARY_LABELS[library]}</h3>
+              <section key={library} className={cn(compare && 'flex flex-col gap-2 rounded-md border p-3')}>
+                {compare && <h3 className="text-sm font-medium">{CHARTING_LIBRARY_LABELS[library]}</h3>}
                 <ChartArea isFetching={isFetching}>{renderChart?.(CHART_ADAPTERS[library])}</ChartArea>
               </section>
             ))}

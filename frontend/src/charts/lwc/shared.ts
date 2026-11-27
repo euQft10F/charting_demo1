@@ -23,7 +23,9 @@ export function themedChartOptions(scale: DeepPartial<PriceScaleOptions> = {}): 
     grid: { vertLines: { visible: false }, horzLines: { color: CHART_THEME.grid } },
     rightPriceScale: { borderVisible: false, visible: true, ...scale },
     leftPriceScale: { borderVisible: false, visible: true, ...scale },
-    timeScale: { borderVisible: false },
+    // Keep the same dates in view when the chart is resized (by default it keeps the bar spacing and
+    // shows fewer dates), so a chart reused in a narrower compare panel still shows its whole Window.
+    timeScale: { borderVisible: false, lockVisibleTimeRangeOnResize: true },
   }
 }
 

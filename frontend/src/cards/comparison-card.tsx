@@ -1,28 +1,16 @@
 import { useState } from 'react'
 
+import type { CardProps } from '@/cards/card-props'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { WindowFields } from '@/components/window-fields'
 import { useWindowForm } from '@/lib/window-form'
-import type { IndicesResponse } from '@/lib/api'
-import type { AxisSide } from '@/lib/axis-side'
-import type { ChartingLibrary } from '@/lib/charting-library'
 import { CHART_THEME } from '@/lib/colors'
 import { cumulativeDifference } from '@/lib/comparison'
 import { useWindowLevels } from '@/lib/queries'
 import type { DateRange } from '@/lib/window'
 
-interface ComparisonCardProps {
-  /** The Indices on offer and the dates their history covers. */
-  history: IndicesResponse
-  /** The shared Axis Side: where the Level axis sits. */
-  axisSide: AxisSide
-  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
-  libraries: readonly ChartingLibrary[]
-  onAxisSideChange: (side: AxisSide) => void
-}
-
-export function ComparisonCard({ history, axisSide, libraries, onAxisSideChange }: ComparisonCardProps) {
+export function ComparisonCard({ history, axisSide, libraries, onAxisSideChange }: CardProps) {
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available)

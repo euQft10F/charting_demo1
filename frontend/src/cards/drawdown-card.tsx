@@ -1,22 +1,11 @@
+import type { CardProps } from '@/cards/card-props'
 import { ChartCard } from '@/components/chart-card'
 import { WindowFields } from '@/components/window-fields'
 import { useWindowForm } from '@/lib/window-form'
-import type { IndicesResponse } from '@/lib/api'
-import type { AxisSide } from '@/lib/axis-side'
-import type { ChartingLibrary } from '@/lib/charting-library'
 import { useDrawdowns } from '@/lib/queries'
 import type { DateRange } from '@/lib/window'
 
-interface DrawdownCardProps {
-  /** The Indices on offer and the dates their history covers. */
-  history: IndicesResponse
-  /** The shared Axis Side: where the Drawdown axis sits. */
-  axisSide: AxisSide
-  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
-  libraries: readonly ChartingLibrary[]
-}
-
-export function DrawdownCard({ history, axisSide, libraries }: DrawdownCardProps) {
+export function DrawdownCard({ history, axisSide, libraries }: CardProps) {
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available, { optionalIndices: true })

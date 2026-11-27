@@ -1,12 +1,11 @@
 import { useState } from 'react'
 
+import type { CardProps } from '@/cards/card-props'
 import { ChartCard } from '@/components/chart-card'
 import { LabelledCheckbox } from '@/components/labelled-checkbox'
 import { DEFAULT_PERIOD_COUNT, PeriodCountField } from '@/components/period-count-field'
 import { WindowFields } from '@/components/window-fields'
-import type { DrawdownPeriod, IndicesResponse } from '@/lib/api'
-import type { AxisSide } from '@/lib/axis-side'
-import type { ChartingLibrary } from '@/lib/charting-library'
+import type { DrawdownPeriod } from '@/lib/api'
 import { useDrawdownPeriods, useWindowLevels } from '@/lib/queries'
 import type { DateRange } from '@/lib/window'
 import { useWindowForm } from '@/lib/window-form'
@@ -14,16 +13,7 @@ import { useWindowForm } from '@/lib/window-form'
 /** Shown instead of the bands while they load: the previous Window's bands would sit in the wrong place. */
 const NO_PERIODS: DrawdownPeriod[] = []
 
-interface DrawdownPeriodsCardProps {
-  /** The Indices on offer and the dates their history covers. */
-  history: IndicesResponse
-  /** The shared Axis Side: where the Level axis sits. */
-  axisSide: AxisSide
-  /** The Charting Libraries that render the chart: the global one on the dashboard, all of them side by side in the compare view. */
-  libraries: readonly ChartingLibrary[]
-}
-
-export function DrawdownPeriodsCard({ history, axisSide, libraries }: DrawdownPeriodsCardProps) {
+export function DrawdownPeriodsCard({ history, axisSide, libraries }: CardProps) {
   const { indices } = history
   const available: DateRange = history
   const { form, applied, range } = useWindowForm(available)
