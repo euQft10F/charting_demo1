@@ -9,8 +9,9 @@ import {
   YAxis,
 } from 'recharts'
 
+import { formatBarValue, formatPercent } from '@/charts/format'
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
-import { AXIS_STYLE, CHART_MARGIN, formatPercent, GRID_STYLE, toRows } from '@/charts/recharts/shared'
+import { AXIS_STYLE, CHART_MARGIN, GRID_STYLE, toRows } from '@/charts/recharts/shared'
 import type { BarChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 
@@ -35,7 +36,7 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
         <Tooltip
           isAnimationActive={false}
           cursor={{ fill: CHART_THEME.grid }}
-          content={(props) => <ChartTooltip {...props} formatValue={(v) => `${v.toFixed(2)}%`} />}
+          content={(props) => <ChartTooltip {...props} formatValue={formatBarValue} />}
         />
         {series.map((s, j) => (
           <Bar key={keyOf(j)} dataKey={keyOf(j)} name={s.name} fill={s.color} isAnimationActive={false} />

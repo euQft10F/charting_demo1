@@ -1,3 +1,4 @@
+import { asUtcDate } from '@/charts/format'
 import { CHART_THEME } from '@/lib/colors'
 
 /** Room around the plot so axis labels at the edges aren't clipped. */
@@ -27,10 +28,8 @@ export function toRows(xs: string[], columns: Record<string, number[] | undefine
   })
 }
 
-const asUtcDate = (iso: string) => new Date(`${iso}T00:00:00Z`)
 const dayMonth = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' })
 const monthYear = new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric', timeZone: 'UTC' })
-const fullDate = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' })
 
 /**
  * Recharts has no time axis, only categories, so the date labels are formatted here: day and month
@@ -41,9 +40,3 @@ export function dateTickFormatter(dates: string[]) {
   const format = span > 183 * 24 * 60 * 60 * 1000 ? monthYear : dayMonth
   return (iso: string) => format.format(asUtcDate(iso))
 }
-
-export const formatFullDate = (iso: string) => fullDate.format(asUtcDate(iso))
-
-const upToTwoDecimals = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
-export const formatLevel = (value: number) => upToTwoDecimals.format(value)
-export const formatPercent = (value: number) => `${upToTwoDecimals.format(value)}%`

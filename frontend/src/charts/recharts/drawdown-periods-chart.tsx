@@ -1,12 +1,11 @@
 import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
+import { formatFullDate, formatLevel } from '@/charts/format'
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
 import {
   AXIS_STYLE,
   CHART_MARGIN,
   dateTickFormatter,
-  formatFullDate,
-  formatLevel,
   GRID_STYLE,
   toRows,
 } from '@/charts/recharts/shared'

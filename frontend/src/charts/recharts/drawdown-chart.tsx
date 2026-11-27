@@ -1,13 +1,12 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { FLAT_DRAWDOWN_RANGE, hasDrawdown } from '@/charts/drawdown-axis'
+import { formatFullDate, formatPercent } from '@/charts/format'
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
 import {
   AXIS_STYLE,
   CHART_MARGIN,
   dateTickFormatter,
-  formatFullDate,
-  formatPercent,
   GRID_STYLE,
   toRows,
 } from '@/charts/recharts/shared'

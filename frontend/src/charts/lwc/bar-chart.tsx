@@ -13,6 +13,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef, useState } from 'react'
 
+import { formatBarValue } from '@/charts/format'
 import { themedChartOptions } from '@/charts/lwc/shared'
 import type { BarChartProps } from '@/charts/types'
 
@@ -172,7 +173,7 @@ export function BarChart({ categories, series, axisSide }: BarChartProps) {
             <div key={i} className="flex items-center gap-2">
               <span className="size-2.5 rounded-sm" style={{ backgroundColor: s.color }} />
               <span>{s.name}</span>
-              <span className="ml-auto pl-4 tabular-nums">{s.values[shown.index].toFixed(2)}%</span>
+              <span className="ml-auto pl-4 tabular-nums">{formatBarValue(s.values[shown.index])}</span>
             </div>
           ))}
         </div>
