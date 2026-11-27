@@ -10,7 +10,7 @@ import {
 } from 'recharts'
 
 import { ChartTooltip } from '@/charts/recharts/chart-tooltip'
-import { AXIS_STYLE, CHART_MARGIN, formatPercent, GRID_STYLE } from '@/charts/recharts/shared'
+import { AXIS_STYLE, CHART_MARGIN, formatPercent, GRID_STYLE, toRows } from '@/charts/recharts/shared'
 import type { BarChartProps } from '@/charts/types'
 import { CHART_THEME } from '@/lib/colors'
 
@@ -22,11 +22,7 @@ const keyOf = (index: number) => `s${index}`
  * Values are percentages. Recharts has a native category axis, so no stand-in times are needed.
  */
 export function BarChart({ categories, series, axisSide }: BarChartProps) {
-  const rows = categories.map((category, i) => {
-    const row: Record<string, string | number> = { category }
-    series.forEach((s, j) => (row[keyOf(j)] = s.values[i]))
-    return row
-  })
+  const rows = toRows(categories, Object.fromEntries(series.map((s, j) => [keyOf(j), s.values])), 'category')
 
   return (
     <ResponsiveContainer width="100%" height="100%">

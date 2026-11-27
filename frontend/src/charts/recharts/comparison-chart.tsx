@@ -50,8 +50,7 @@ export function ComparisonChart({ dates, benchmark, strategy, difference, logSca
             <ChartTooltip
               {...props}
               // The Area is drawn first so it sits behind the lines, but the tooltip lists it last.
-              // (Recharts' `itemSorter` doesn't reach custom tooltip content.)
-              payload={props.payload && [...props.payload].sort((a, b) => differenceLast(a) - differenceLast(b))}
+              sortKey={differenceLast}
               formatLabel={formatFullDate}
               formatValue={(v, key) => (key === 'difference' ? formatPercent(v) : formatLevel(v))}
             />

@@ -31,7 +31,7 @@ export function DrawdownPeriodsChart({ dates, benchmark, strategy, periods, axis
         <Tooltip
           isAnimationActive={false}
           content={(props) => (
-            <ChartTooltip {...props} formatLabel={formatFullDate} formatValue={(v) => formatLevel(v)} />
+            <ChartTooltip {...props} formatLabel={formatFullDate} formatValue={formatLevel} />
           )}
         />
         {/* Full-height bands (no y1/y2), drawn before the lines so they sit behind them. */}

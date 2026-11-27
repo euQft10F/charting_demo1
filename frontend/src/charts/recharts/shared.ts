@@ -14,13 +14,14 @@ export const AXIS_STYLE = {
 export const GRID_STYLE = { vertical: false, stroke: CHART_THEME.grid } as const
 
 /**
- * Recharts wants one object per x position, so the parallel `dates`/values arrays become rows.
- * A column left undefined leaves its key out, which Recharts draws as no data.
+ * Recharts wants one object per x position, so the parallel x (dates or categories) and values
+ * arrays become rows, the x under `xKey`. A column left undefined leaves its key out, which
+ * Recharts draws as no data.
  */
-export function toRows(dates: string[], columns: Record<string, number[] | undefined>) {
+export function toRows(xs: string[], columns: Record<string, number[] | undefined>, xKey = 'date') {
   const entries = Object.entries(columns)
-  return dates.map((date, i) => {
-    const row: Record<string, string | number> = { date }
+  return xs.map((x, i) => {
+    const row: Record<string, string | number> = { [xKey]: x }
     for (const [key, values] of entries) if (values) row[key] = values[i]
     return row
   })

@@ -17,7 +17,7 @@ import type {
 import type { ChartingLibrary } from '@/lib/charting-library'
 
 /** One Charting Library's renderers: every chart, each taking the same library-agnostic props. */
-export interface ChartAdapter {
+interface ChartAdapter {
   ComparisonChart: ComponentType<ComparisonChartProps>
   DrawdownChart: ComponentType<DrawdownChartProps>
   DrawdownPeriodsChart: ComponentType<DrawdownPeriodsChartProps>

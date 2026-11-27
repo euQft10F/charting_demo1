@@ -20,7 +20,7 @@ These notes record where a library needed a workaround, to weigh in the final ch
 - **Drawdown Period bands must start and end on a date in the data.** `ReferenceArea` on a category axis can only use existing categories, so the adapter drops any Period whose dates aren't in the Window (they're briefly stale while a new Window loads).
 - **A function-valued axis domain turns off nice ticks** (e.g. -5.47%, -11.47%). The Drawdown axis uses `['auto', 0]` instead, switching to a fixed `[-1, 0]` when the Window has no Drawdown at all.
 - **Log scale** needs the domain set to `['dataMin', 'dataMax']`: the usual `'auto'` rounds the bounds outward to round numbers, which on a log scale could reach 0.
-- **Tooltip order follows drawing order.** The Cumulative Difference area is drawn first so it sits behind the Level lines, and `itemSorter` does not reach custom tooltip content, so the adapter re-sorts the payload to list it last.
+- **Tooltip order follows drawing order.** The Cumulative Difference area is drawn first so it sits behind the Level lines, and `itemSorter` does not reach custom tooltip content, so `ChartTooltip` takes a `sortKey` to list it last.
 - **Animations off** (`isAnimationActive={false}`) everywhere: with ~1,500 points per series at Max they make Window changes feel sluggish.
 - **No built-in crosshair value labels or pan/zoom.** A custom tooltip (`ChartTooltip`) lists every series at the hovered date or category.
 - Strengths: native category axis and grouped bars, so the bar charts need no workaround; declarative JSX, and styling via props matches the dashboard easily; SVG output is easy to inspect.

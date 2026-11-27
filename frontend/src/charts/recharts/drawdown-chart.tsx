@@ -36,7 +36,7 @@ export function DrawdownChart({ dates, benchmark, strategy, axisSide }: Drawdown
         <Tooltip
           isAnimationActive={false}
           content={(props) => (
-            <ChartTooltip {...props} formatLabel={formatFullDate} formatValue={(v) => formatPercent(v)} />
+            <ChartTooltip {...props} formatLabel={formatFullDate} formatValue={formatPercent} />
           )}
         />
         {/* The Benchmark is drawn first, so the Strategy overlays it. A missing Index draws nothing. */}

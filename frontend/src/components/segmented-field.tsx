@@ -1,6 +1,5 @@
 import { Field, FieldLabel } from '@/components/ui/field'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { cn } from '@/lib/utils'
 
 interface SegmentedFieldProps<T extends string> {
   label: string
@@ -28,12 +27,9 @@ export function SegmentedField<T extends string>({ label, options, value, onChan
           <ToggleGroupItem
             key={option}
             value={option}
-            className={cn(
-              !labels && 'capitalize',
-              'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
-            )}
+            className="capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
           >
-            {labels ? labels[option] : option}
+            {labels?.[option] ?? option}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
